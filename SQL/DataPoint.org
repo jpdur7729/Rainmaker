@@ -1,0 +1,89 @@
+# -------------------------------------------------------------------------
+#                  Author    : JPD
+#                  Time-stamp: "2021-02-15 15:05:04 jpdur"
+# -------------------------------------------------------------------------
+# #+TODO: TODO WAITING WIP | DONE
+
+* Principles
+** Hierarchy of Nodes
+Hierarchies are defined based on Nodes.
+
+Nodes are associated with a level. In a given hierarchy different nodes can
+have a similar name as long as they belong to different level. DataPoints
+are attached to Nodes within a Hierarchy.
+
+All Nodes whether Generic/Industry Specific or Company are all added
+on the same Hierarchy of Nodes ==> That way the display of the
+hierarchy for a company ... is just a filtering by Industry/Company of
+the big tree which can be built recursively as there is not
+restriction about it ...
+
+That way the hierarchy can be defined based on the presentation used
+by the client and then the correct set of SQLs are generated in the
+background and data is provided accordingly
+** Hierarchy of DataPoints
+Next level is with or without DataPoints
+
+
+* Files
+There is an old copy in f:/proto/PM
+
+| FileName             | Y/N | Contents                                                  | Comments |
+|----------------------+-----+-----------------------------------------------------------+----------|
+| DisplayHierarchy.sql | Y   | Display fct and Stored Proc                               |          |
+| DataPointDef         | Y   | Definition of the different tables to store the structure |          |
+| DataPointValues      | Y   | Definition of the different tables to store the value     |          |
+| Cleanup              | Y-N | Just to reset all the Tables                              |          |
+| UploadXXXList        | N-Y | Used to store/populate the default data in the tables     |          |
+|                      |     | Useful for IndustryList, HierarchyList, CompanyList       |          |
+| Hierarchy            | Y-N | Create the table IndustryList, HierarchyList, CompanyList |          |
+| +Obsolete+             | N   | Old Version                                               |          |
+| SpreadsheetProcess   | Y   | All the stored procedures called from spreadsheet to      |          |
+|                      |     | define structure and upload the data points               |          |
+
+
+* Hierarchies
+Create the hierarchies ==> Same DapatPointDef can belong to multiple Hierarchies
+Different Hiedrarchies may have more or less levels.
+DataPoints Def theoretically could be added at any level of the hierarchy
+** Assumption 1
+Each Hierarchy is assumed to be a + consolidation
+** Independance
+Irrespectively of DataPoints being asociated
+
+* TODO ToDo ideas 
+  DEADLINE: <2021-01-13 Wed>
+  :LOGBOOK:
+  CLOCK: [2021-01-02 Sat 10:46]--[2021-01-02 Sat 10:47] =>  0:01
+  CLOCK: [2021-01-02 Sat 10:45]--[2021-01-02 Sat 10:46] =>  0:01
+  CLOCK: [2021-01-02 Sat 10:45]--[2021-01-02 Sat 10:45] =>  0:00
+  :END:
+  - State "DONE"       from "WIP"        [2021-01-02 Sat 10:47] \\
+    It was easier than anticipated
+  - State "WIP"        from "WAITING"    [2021-01-02 Sat 10:46] \\
+    Ready to go ... after now
+  - State "WAITING"    from "TODO"       [2021-01-02 Sat 10:44] \\
+    K should do a few preparatory steps
+  - State "DONE"       from "WIP"        [2021-01-02 Sat 10:41] \\
+    Great all happy
+  - State "WIP"        from "WAITING"    [2021-01-02 Sat 10:41] \\
+    Start working at long last
+  - State "WAITING"    from "TODO"       [2021-01-02 Sat 10:41] \\
+    To wip
+    Waiting for Report
+  Review the DataPointDef.sql to adjust the new evaluations..
+** Leverage the examples
+   - [ ] TechCo - Industry 1
+   - [ ] SaasCo - Industry 2
+     - [ ] list 2
+     - [ ] Item 1
+
+* Pbs
+** X -> X
+How to circumvent situations like
+Amortization -> Amortization i.e. same name at 2 different levels
+Add the unicity check per Name, Level, Hierarchy ????
+As a result create a list of Hierarchies to have the top level
+Change in the DataPointDef ...
+** Order for Presentation/Drop Down
+How to order the presentation so that the data points are presented in the right order ?
