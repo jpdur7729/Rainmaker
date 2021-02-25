@@ -1,0 +1,58 @@
+# -------------------------------------------------------------------------
+#                  Author    : FIS - JPD
+#                  Time-stamp: "2021-02-25 17:12:33 jpdur"
+# -------------------------------------------------------------------------
+
+create in an order which makes it possible to have all the depencies installed
+
+| # | Table                                               | Comments | Dependencies |
+|---+-----------------------------------------------------+----------+--------------|
+| 1 | RM_Industry.sql                                     |          |              |
+| 2 | RMX_KpiType.sql                                     |          |              |
+| 3 | RM_Node.sql                                         |          | 1 and 2      |
+|---+-----------------------------------------------------+----------+--------------|
+|   | PS_Populate_IndustryKPIType.sql                     |          |              |
+|---+-----------------------------------------------------+----------+--------------|
+|   | RM_ClassType.sql                                    | OK       | Deployed     |
+|   | RM_Company.sql                                      |          |              |
+|   | RM_DataItemAttributeGroupAssociation.sql            |          |              |
+|   | RM_DataItem.sql                                     |          |              |
+|   | RM_DefaultNodeDataItemAssociation.sql               |          |              |
+|   | RM_KPI_Collection_Batch_Dimension.sql               |          |              |
+|   | RM_KPI_Collection_Batch.sql                         |          |              |
+|   | RM_KPI_Collection_DataItem.sql                      |          |              |
+|   | RM_KPI_Collection_Dimension.sql                     |          |              |
+|   | RM_KPI_Collection_Node.sql                          |          |              |
+|   | RM_KPICommentaryCompanyAssocation.sql               |          |              |
+|   | RM_KPICommentaryIndustryAssociation.sql             |          |              |
+|   | RM_KPICompanyConfigDataItemAttributeAssociation.sql |          |              |
+|   | RM_KPICompanyConfigNodeAssociation.sql              |          |              |
+|   | RM_KPICompanyConfigNodeDataItemAssociation.sql      |          |              |
+|   | RM_KPICompanyConfiguration.sql                      |          |              |
+|   | RM_KPICompanyRecurrenceAssociation.sql              |          |              |
+|   | RM_KPICompanyRecurrenceScenarioAssociation.sql      |          |              |
+|   | RM_NodeDataItemAssociation.sql                      |          |              |
+|   | RM_NodeIndustryAssociation.sql                      |          |              |
+|   | RMX_BatchStatus.sql                                 |          |              |
+|   | RMX_CollectionPeriod.sql                            |          |              |
+|   | RMX_CollectionRecurrence.sql                        |          |              |
+|   | RMX_KpiCategory.sql                                 |          |              |
+|   | RMX_ValueType.sql                                   |          |              |
+|   | RMX_WorkflowStatus.sql                              |          |              |
+
+
+
+drop table RM_ClassType
+drop table RM_Company
+drop table RM_DataItem
+drop table RM_DefaultNodeDataItemAssociation
+drop table RM_Industry
+drop table RM_Node
+drop table RMX_BatchStatus
+drop table RMX_CollectionPeriod
+drop table RMX_CollectionRecurrence
+drop table RMX_KpiCategory
+drop table RMX_KpiType
+drop table RMX_ValueType
+drop table RMX_WorkflowStatus
+
