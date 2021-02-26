@@ -1,0 +1,16 @@
+# -------------------------------------------------------------------------
+#                  Author    : FIS - JPD
+#                  Time-stamp: "2021-02-26 06:43:18 jpdur"
+# -------------------------------------------------------------------------
+
+* Overview
+Here is the lists of steps in order to successfully deploy the staging tables
+
+* TODO The key tables
+
+| Files             | Comments                              | DIA - logical equivalent               |
+|-------------------+---------------------------------------+----------------------------------------|
+| T_Lists.sql       | HierachyList/IndustryList/CompanyList | RMX_KPIType / RM_Industry / RM_Company |
+| T_NodeDef.sql     | NodeDef,NodeDefIndustry,NodefCompany  |                                        |
+| T_Hierarchies.sql | Hierarchy of Nodes                    | A staging equivalent of RM_Node        |
+|                   |                                       |                                        |

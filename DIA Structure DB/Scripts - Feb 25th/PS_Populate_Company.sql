@@ -1,31 +1,30 @@
 -- -------------------------------------------------------------------------
 --                  Author    : FIS - JPD
---                  Time-stamp: "2021-02-26 07:07:40 jpdur"
+--                  Time-stamp: "2021-02-26 06:59:20 jpdur"
 -- -------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------
--- Add in to the Industry the current/new Industry
+-- Add in to the Company the current/new Company
 -- Extra precaution --> The name of the industry is assumed to be unique to prevent issues
 -- Not in that table as it is actually inherited from Investran
 -- ----------------------------------------------------------------------------------------
-CREATE or ALTER PROCEDURE [dbo].[PS_Populate_Industry] (@IndustryName as varchar(255), @InvIndustryId as integer = 0)
+CREATE or ALTER PROCEDURE [dbo].[PS_Populate_Company] (@CompanyName as varchar(255), @InvCompanyId as integer = 0)
 as
 BEGIN
 
-	merge into RM_Industry
+	merge into RM_Company
 	using (
-	      select @IndustryName as InvIndustryName, @InvIndustryId as InvIndustryId
+	      select @CompanyName as InvCompanyName, @InvCompanyID as InvCompanyID
 	) x
-	on x.InvIndustryName = RM_Industry.InvIndustryName 
+	on x.InvCompanyName = RM_Company.InvCompanyName 
 	WHEN NOT MATCHED THEN
-	     INSERT VALUES (NEWID(),x.InvIndustryID,x.InvIndustryName) ;
+	     INSERT (ID,InvCompanyID,InvCompanyName) VALUES (NEWID(),x.InvCompanyID,x.InvCompanyName) ;
 
 END
 GO
 
--- InvIndustryID is not known ==> 0 by default
-EXEC PS_Populate_Industry 'Industry 1'
-EXEC PS_Populate_Industry 'Industry 2'
+-- InvCompanyID is not known ==> 0 by default
+EXEC PS_Populate_Company 'TestCo'
 
-select * from RM_Industry
+select * from RM_Company
 

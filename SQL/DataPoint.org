@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------
 #                  Author    : JPD
-#                  Time-stamp: "2021-02-15 15:05:04 jpdur"
+#                  Time-stamp: "2021-02-26 06:27:01 jpdur"
 # -------------------------------------------------------------------------
 # #+TODO: TODO WAITING WIP | DONE
 
@@ -21,6 +21,7 @@ restriction about it ...
 That way the hierarchy can be defined based on the presentation used
 by the client and then the correct set of SQLs are generated in the
 background and data is provided accordingly
+
 ** Hierarchy of DataPoints
 Next level is with or without DataPoints
 

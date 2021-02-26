@@ -1,6 +1,6 @@
 -- -------------------------------------------------------------------------
 --                  Author    : FIS - JPD
---                  Time-stamp: "2021-02-25 17:40:32 jpdur"
+--                  Time-stamp: "2021-02-26 07:04:55 jpdur"
 -- -------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------
@@ -24,5 +24,6 @@ GO
 
 EXEC PS_Populate_KPIType 'Balance Sheet'
 EXEC PS_Populate_KPIType 'Income Statement'
+EXEC PS_Populate_KPIType 'Profit Loss'
 
 select * from RMX_KPIType
