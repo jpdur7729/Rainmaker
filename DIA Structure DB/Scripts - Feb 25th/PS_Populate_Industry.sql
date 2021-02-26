@@ -1,6 +1,6 @@
 -- -------------------------------------------------------------------------
 --                  Author    : FIS - JPD
---                  Time-stamp: "2021-02-26 07:07:40 jpdur"
+--                  Time-stamp: "2021-02-26 08:58:43 jpdur"
 -- -------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------
@@ -26,6 +26,7 @@ GO
 -- InvIndustryID is not known ==> 0 by default
 EXEC PS_Populate_Industry 'Industry 1'
 EXEC PS_Populate_Industry 'Industry 2'
+EXEC PS_Populate_Industry 'Industry 3'
 
 select * from RM_Industry
 

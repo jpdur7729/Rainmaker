@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : F2 - JPD
---                     Time-stamp: "2021-02-26 08:28:58 jpdur"
+--                     Time-stamp: "2021-02-26 09:05:47 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- -------------------------------------------------------------------------------------
@@ -23,7 +23,9 @@ GO
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 -- Step 2 // Creates the view accordingly
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-create view CompanyList
+create or alter view CompanyList
 as 
-	Select Id as ID, InvCompanyName as Name from RM_Company
+	Select Id as ID, InvCompanyName as Name,InvIndustry as IndustryID from RM_Company
 
+-- Verification that the 2 reference tables are linked 
+select * from CompanyList cl ,IndustryList il where cl.IndustryID = il.ID
