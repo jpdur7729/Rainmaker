@@ -1,16 +1,33 @@
 # -------------------------------------------------------------------------
 #                  Author    : FIS - JPD
-#                  Time-stamp: "2021-02-26 06:43:18 jpdur"
+#                  Time-stamp: "2021-02-26 08:14:02 jpdur"
 # -------------------------------------------------------------------------
 
 * Overview
 Here is the lists of steps in order to successfully deploy the staging tables
 
-* TODO The key tables
+* The key tables
+In total 6 tables are actually used as part of the Staging area
+
+** Link with Static Data
+| Files       | Comments                              | DIA - logical equivalent               |
+|-------------+---------------------------------------+----------------------------------------|
+| T_Lists.sql | HierachyList/IndustryList/CompanyList | RMX_KPIType / RM_Industry / RM_Company |
+|-------------+---------------------------------------+----------------------------------------|
+| V_Lists.sql | Mapping the RM Tables - assumed to be |                                        |
+|             | populated to view with the same names |                                        |
+|             | as the corresponding tables           |                                        |
+
+** Hierachy Structure 
 
 | Files             | Comments                              | DIA - logical equivalent               |
 |-------------------+---------------------------------------+----------------------------------------|
-| T_Lists.sql       | HierachyList/IndustryList/CompanyList | RMX_KPIType / RM_Industry / RM_Company |
 | T_NodeDef.sql     | NodeDef,NodeDefIndustry,NodefCompany  |                                        |
 | T_Hierarchies.sql | Hierarchy of Nodes                    | A staging equivalent of RM_Node        |
 |                   |                                       |                                        |
+
+** Managmenent of Data Points
+| Files                  | Comments | DIA - logical equivalent |
+|------------------------+----------+--------------------------|
+| T_DataPointMapping.sql |          |                          |
+| T_DataPointValues.sql  |          |                          |

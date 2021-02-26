@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : F2 - JPD
---                     Time-stamp: "2021-01-14 10:06:19 jpdur"
+--                     Time-stamp: "2021-02-26 08:09:36 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- Cleanup all data
@@ -10,4 +10,3 @@ truncate table  NodeDefIndustry
 truncate table  NodeDefCompany
 truncate table  DataPointMapping
 truncate table  DataPointValues
-
