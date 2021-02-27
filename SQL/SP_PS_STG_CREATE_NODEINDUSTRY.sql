@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
---                     Author    : F2 - JPD
---                     Time-stamp: "2021-02-26 10:20:09 jpdur"
+--                     Author    : FIS - JPD
+--                     Time-stamp: "2021-02-26 17:07:13 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- ---------------------------------------------------------
@@ -26,7 +26,9 @@ merge into NodeDefIndustry using (
       on x.IndustryID = NodeDefIndustry.IndustryID and x.HierarchyID = NodeDefIndustry.HierarchyID
             and x.Name = NodeDefIndustry.Name and x.ParentLevelName = NodeDefIndustry.ParentLevelName 
       when not matched then
-      insert values (NEWID(),'JPDUR',getdate(),getdate(),x.Name,x.IndustryID,x.HierarchyID,@SortOrder,x.ParentLevelName) 
+      	   -- New column(s) added in order to guarantee the integration with DIA
+      	   insert (ID,LastUser,createdAt,updatedAt,Name,IndustryID,HierarchyID,SortOrder,ParentLevelName)
+      	   values (NEWID(),'JPDUR',getdate(),getdate(),x.Name,x.IndustryID,x.HierarchyID,@SortOrder,x.ParentLevelName) 
       WHEN MATCHED THEN
       UPDATE set SortOrder = @SortOrder;
 

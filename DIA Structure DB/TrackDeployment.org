@@ -1,45 +1,47 @@
 # -------------------------------------------------------------------------
 #                  Author    : FIS - JPD
-#                  Time-stamp: "2021-02-26 07:02:46 jpdur"
+#                  Time-stamp: "2021-02-27 09:15:48 jpdur"
 # -------------------------------------------------------------------------
 
 create in an order which makes it possible to have all the depencies installed
 
-| # | Table                                                           | Comments      | Dependencies |
-|---+-----------------------------------------------------------------+---------------+--------------|
-| 1 | RM_Industry.sql                                                 | IndustryList  |              |
-| 2 | RMX_KpiType.sql                                                 | HierarchyList |              |
-| 3 | RM_Node.sql                                                     | Hierarchies   | 1 and 2      |
-| 4 | RM_Company.sql                                                  | CompanyList   |              |
-|---+-----------------------------------------------------------------+---------------+--------------|
-|   | PS_Populate_Industry/KPIType/Company.sql                        | Populate      |              |
-|   | Values: Balance Sheet(Income Statement)/TestIndustry1(2)/TestCo |               |              |
-|---+-----------------------------------------------------------------+---------------+--------------|
-|   | RM_ClassType.sql                                                | OK            | Deployed     |
-|   | RM_DataItemAttributeGroupAssociation.sql                        |               |              |
-|   | RM_DataItem.sql                                                 |               |              |
-|   | RM_DefaultNodeDataItemAssociation.sql                           |               |              |
-|   | RM_KPI_Collection_Batch_Dimension.sql                           |               |              |
-|   | RM_KPI_Collection_Batch.sql                                     |               |              |
-|   | RM_KPI_Collection_DataItem.sql                                  |               |              |
-|   | RM_KPI_Collection_Dimension.sql                                 |               |              |
-|   | RM_KPI_Collection_Node.sql                                      |               |              |
-|   | RM_KPICommentaryCompanyAssocation.sql                           |               |              |
-|   | RM_KPICommentaryIndustryAssociation.sql                         |               |              |
-|   | RM_KPICompanyConfigDataItemAttributeAssociation.sql             |               |              |
-|   | RM_KPICompanyConfigNodeAssociation.sql                          |               |              |
-|   | RM_KPICompanyConfigNodeDataItemAssociation.sql                  |               |              |
-|   | RM_KPICompanyConfiguration.sql                                  |               |              |
-|   | RM_KPICompanyRecurrenceAssociation.sql                          |               |              |
-|   | RM_KPICompanyRecurrenceScenarioAssociation.sql                  |               |              |
-|   | RM_NodeDataItemAssociation.sql                                  |               |              |
-|   | RM_NodeIndustryAssociation.sql                                  |               |              |
-|   | RMX_BatchStatus.sql                                             |               |              |
-|   | RMX_CollectionPeriod.sql                                        |               |              |
-|   | RMX_CollectionRecurrence.sql                                    |               |              |
-|   | RMX_KpiCategory.sql                                             |               |              |
-|   | RMX_ValueType.sql                                               |               |              |
-|   | RMX_WorkflowStatus.sql                                          |               |              |
+| # | Table                                                           | Comments      | Dependencies |   |
+|---+-----------------------------------------------------------------+---------------+--------------+---|
+| 1 | RM_Industry.sql                                                 | IndustryList  |              |   |
+| 2 | RMX_KpiType.sql                                                 | HierarchyList |              |   |
+| 3 | RM_Node.sql                                                     | Hierarchies   | 1 and 2      |   |
+| 4 | RM_Company.sql                                                  | CompanyList   |              |   |
+|---+-----------------------------------------------------------------+---------------+--------------+---|
+|   | PS_Populate_Industry/KPIType/Company.sql                        | Populate      |              |   |
+|   | Values: Balance Sheet(Income Statement)/TestIndustry1(2)/TestCo |               |              |   |
+|---+-----------------------------------------------------------------+---------------+--------------+---|
+| 5 | =RM_KPIIndustryTemplate.sql=                                      | *JPD PROVIDED*  |              |   |
+| 6 | RM_NodeIndustryAssociation.sql                                  |               |              |   |
+|---+-----------------------------------------------------------------+---------------+--------------+---|
+| 6 | RMX_CollectionRecurrence.sql                                    |               |              |   |
+| 7 | RM_KPICompanyConfiguration.sql                                  |               | 6            |   |
+|   | RM_ClassType.sql                                                | OK            | Deployed     |   |
+|   | RM_DataItemAttributeGroupAssociation.sql                        |               |              |   |
+|   | RM_DataItem.sql                                                 |               |              |   |
+|   | RM_DefaultNodeDataItemAssociation.sql                           |               |              |   |
+|   | RM_KPI_Collection_Batch_Dimension.sql                           |               |              |   |
+|   | RM_KPI_Collection_Batch.sql                                     |               |              |   |
+|   | RM_KPI_Collection_DataItem.sql                                  |               |              |   |
+|   | RM_KPI_Collection_Dimension.sql                                 |               |              |   |
+|   | RM_KPI_Collection_Node.sql                                      |               |              |   |
+|   | RM_KPICommentaryCompanyAssocation.sql                           |               |              |   |
+|   | RM_KPICommentaryIndustryAssociation.sql                         |               |              |   |
+|   | RM_KPICompanyConfigDataItemAttributeAssociation.sql             |               |              |   |
+|   | RM_KPICompanyConfigNodeAssociation.sql                          |               |              |   |
+|   | RM_KPICompanyConfigNodeDataItemAssociation.sql                  |               |              |   |
+|   | RM_KPICompanyRecurrenceAssociation.sql                          |               |              |   |
+|   | RM_KPICompanyRecurrenceScenarioAssociation.sql                  |               |              |   |
+|   | RM_NodeDataItemAssociation.sql                                  |               |              |   |
+|   | RMX_BatchStatus.sql                                             |               |              |   |
+|   | RMX_CollectionPeriod.sql                                        |               |              |   |
+|   | RMX_KpiCategory.sql                                             |               |              |   |
+|   | RMX_ValueType.sql                                               |               |              |   |
+|   | RMX_WorkflowStatus.sql                                          |               |              |   |
 
 
 

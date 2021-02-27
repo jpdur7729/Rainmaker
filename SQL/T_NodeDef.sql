@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
---                     Author    : F2 - JPD
---                     Time-stamp: "2021-02-25 11:33:48 jpdur"
+--                     Author    : FIS - JPD
+--                     Time-stamp: "2021-02-26 17:07:25 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- ------------------------------------------------------------------------------
@@ -48,7 +48,9 @@ Name	      varchar(100)  	  NOT NULL, -- DataPoint ID
 IndustryID    varchar(36)	  NOT NULL, -- Industry ID
 HierarchyID   varchar(36)	  NOT NULL,  -- Hierarchy ID
 SortOrder     integer		  NOT NULL  DEFAULT 0,
-ParentLevelName varchar(100) 	  NOT NULL
+ParentLevelName varchar(100) 	  NOT NULL,
+-- Add this ID to make it unique to idetify the parent without ambiguity
+RM_NODE_ID	UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL
 )
 
 -- Add constraints so that there is only 1 value per date

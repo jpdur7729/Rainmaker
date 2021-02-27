@@ -1,10 +1,23 @@
 # ------------------------------------------------------------------------------
-#                     Author    : F2 - JPD
-#                     Time-stamp: "2021-02-26 10:46:34 jpdur"
+#                     Author    : FIS - JPD
+#                     Time-stamp: "2021-02-26 17:30:56 jpdur"
 # ------------------------------------------------------------------------------
 
 
+# To become a parameter with a default value
+$DBInstance = "localhost"
 $DB = "DIA"
+
+# ---------------------------------------------------------------------------------- 
+# Default parameter to execute the SQL or save the script with all the generated SQL
+#         parameter to change Structure / Or Upload Data or both 
+# ---------------------------------------------------------------------------------- 
+
+# -------------------------------------------------------------
+# File to be read ???
+# And then the extra data point could be passed as a parameter 
+# in the case of LDC it is extracted from the name of the file
+# -------------------------------------------------------------
 
 # --------------------------------------------------------------------------
 # Utility function to execute all SQL statements from a column
@@ -17,7 +30,7 @@ function Execute-SQLColumn($data,$SQLQuery){
     $data | select -skip 1 | ForEach-Object {
 	$_."$SQLQuery"
 	if ($_."$SQLQuery".length -ne 0) {
-	    $data_query1 = Invoke-DbaQuery -SqlInstance localhost -Database $DB -Query $_."$SQLQuery"
+	    $data_query1 = Invoke-DbaQuery -SqlInstance $DBInstance -Database $DB -Query $_."$SQLQuery"
 	}
 	# Display results if required 
 	# $data_query1.ID
@@ -91,7 +104,7 @@ $str |
 
 # Extract the Industry for the given company 
 $query1 = "select Name from IndustryList where ID in (select IndustryID from CompanyList where Name = '"+$Company+"')"
-$data_query1 = Invoke-DbaQuery -SqlInstance localhost -Database $DB -Query $query1
+$data_query1 = Invoke-DbaQuery -SqlInstance $DBInstance -Database $DB -Query $query1
 
 # Error message or confirmation if needed
 if ($data_query1 -eq $null) {
