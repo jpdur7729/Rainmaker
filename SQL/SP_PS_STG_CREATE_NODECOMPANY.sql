@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-26 17:07:49 jpdur"
+--                     Time-stamp: "2021-02-27 15:04:45 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- ---------------------------------------------------------
@@ -27,9 +27,10 @@ merge into NodeDefCompany using (
       on x.IndustryID = NodeDefCompany.IndustryID and x.HierarchyID = NodeDefCompany.HierarchyID and x.CompanyID = NodeDefCompany.CompanyID
       	 and x.Name = NodeDefCompany.Name and x.ParentLevelName = NodeDefCompany.ParentLevelName
       when not matched then
-      insert values (NEWID(),'JPDUR',getdate(),getdate(),x.Name,@LevelNumber,x.CompanyID,x.IndustryID,x.HierarchyID,@SortOrder,x.ParentLevelName) 
+       insert (ID,LastUser,createdAt,updatedAt,Name,Level,CompanyID,IndustryID,HierarchyID,SortOrder,ParentLevelName)
+       values (NEWID(),'JPDUR',getdate(),getdate(),x.Name,@LevelNumber,x.CompanyID,x.IndustryID,x.HierarchyID,@SortOrder,x.ParentLevelName) 
       WHEN MATCHED THEN
-      UPDATE set SortOrder = @SortOrder;
+       UPDATE set SortOrder = @SortOrder;
 
 END
 GO

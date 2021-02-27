@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-27 08:37:42 jpdur"
+--                     Time-stamp: "2021-02-27 15:28:45 jpdur"
 -- ------------------------------------------------------------------------------
 
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_NODE] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
@@ -36,13 +36,22 @@ BEGIN
           INSERT (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined)
 	  	 VALUES(x.RMNodeID,x.Name,x.ParentNodeID,x.KPITypeID,@isSystemDefined) ;
 
-      -- Step 2: We add the Company Level 1 IF there is a company level 2 and for these we add them in RM_NODE
-      Select NC.NAME as Name,NI.RM_NODE_ID as ParentNodeID,@HierarchyID as KPITypeID from (select * from NodeDefCompany NC 
+      -- Step 2: We add the Company Level 1 IF there is no company level 2
+      --         Only these appear in RM_NODE
+      merge into RM_NODE
+      using (
+      Select NC.RM_NODE_ID as RMNodeID, NC.NAME as Name,NI.RM_NODE_ID as ParentNodeID,@HierarchyID as KPITypeID from (select * from NodeDefCompany NC 
 						where NC.level = 1 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
 							and Name in (select ParentLevelName from NodeDefCompany NC 
 								where NC.level = 2 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID)) NC,
 								NodeDefIndustry NI,Hierarchies H
-		where H.NodeDefID = NC.ID and H.ParentNodeDefID = NI.ID 
+		where H.NodeDefID = NC.ID and H.ParentNodeDefID = NI.ID
+      ) x
+      on
+      x.RMNodeID = RM_NODE.ID -- and x.Name = RM_NODE.Name and x.ParentNodeID = RM_NODE.ParentNodeID
+      when NOT MATCHED THEN
+          INSERT (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined)
+	  	 VALUES(x.RMNodeID,x.Name,x.ParentNodeID,x.KPITypeID,@isSystemDefined) ;
 			 
 END
 GO
