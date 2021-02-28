@@ -1,12 +1,24 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-02-26 17:30:56 jpdur"
+#                     Time-stamp: "2021-02-28 11:49:07 jpdur"
 # ------------------------------------------------------------------------------
 
+param(
+    [Parameter(Mandatory=$false)] [string] $Exec_Dir = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition),
+    [Parameter(Mandatory=$false)] [string] $Source = "6_Output_1_FIS_TestCo_2020_10_PL_AC_20210108 2203.xlsx",
+    [Parameter(Mandatory=$false)] [string] $Result = "Results.xlsx",
+    [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
+    [Parameter(Mandatory=$false)] [string] $Database = "DIA",
+    [Parameter(Mandatory=$false)] [ValidateSet("runSQL","GenerateSQLScript")] [string] $Action = "runSQL",
+    [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly","All")] [string] $Scope = "StructureOnly",
+    [Parameter(Mandatory=$false)] [string] $Script = "Results.sql"
+)
 
-# To become a parameter with a default value
-$DBInstance = "localhost"
-$DB = "DIA"
+# Execution is done from the directory of the script ==> relative paths are thus possible
+cd $Exec_Dir
+
+# Create a temporary file to generate the SQL script
+$TempFile = New-TemporaryFile 
 
 # ---------------------------------------------------------------------------------- 
 # Default parameter to execute the SQL or save the script with all the generated SQL
@@ -30,7 +42,10 @@ function Execute-SQLColumn($data,$SQLQuery){
     $data | select -skip 1 | ForEach-Object {
 	$_."$SQLQuery"
 	if ($_."$SQLQuery".length -ne 0) {
-	    $data_query1 = Invoke-DbaQuery -SqlInstance $DBInstance -Database $DB -Query $_."$SQLQuery"
+	    if ($Action -eq "runSQL") {
+		$data_query1 = Invoke-DbaQuery -SqlInstance $DatabaseInstance -Database $Database -Query $_."$SQLQuery"
+	    }
+	    $SQLQuery + $_."$SQLQuery" | Out-File -Encoding ASCII -Append $TempFile
 	}
 	# Display results if required 
 	# $data_query1.ID
@@ -69,13 +84,8 @@ function Execute-SQLColumn($data,$SQLQuery){
 #       }
 #   }
 
-
-# Name structure Example
-$FileName = "6_Output_1_FIS_TestCo_2020_10_PL_AC_20210108 2203.xlsx"
-$NewFileName = "Results.xlsx"
-
 # Use only # as separators
-$str = $FileName.replace('_','#').replace(' ','#')
+$str = $Source.replace('_','#').replace(' ','#')
 $str
 
 # Pattern to read the file name
@@ -104,7 +114,7 @@ $str |
 
 # Extract the Industry for the given company 
 $query1 = "select Name from IndustryList where ID in (select IndustryID from CompanyList where Name = '"+$Company+"')"
-$data_query1 = Invoke-DbaQuery -SqlInstance $DBInstance -Database $DB -Query $query1
+$data_query1 = Invoke-DbaQuery -SqlInstance $DatabaseInstance -Database $Database -Query $query1
 
 # Error message or confirmation if needed
 if ($data_query1 -eq $null) {
@@ -155,20 +165,20 @@ $DateasDate = $DateasDate.addDays(-1)
 "Stage 1 - Test Here if result file is blocked"
 
 # Delete the NewFile if it exists
-rm $NewFileName -ErrorAction SilentlyContinue
+rm $Result -ErrorAction SilentlyContinue
 
 # Prepare the output 
 $HeaderList = @('G1','I1','1','2','Amount')
 
 # Read the initial spreadsheet 
 # StartRow = 1 is the 1st line //// StartRow 2 to eliminate the header and replace it
-$data = Import-Excel -Path ("./"+$FileName) -StartRow 2 -HeaderName $HeaderList 
+$data = Import-Excel -Path ("./"+$Source) -StartRow 2 -HeaderName $HeaderList 
 
 # Add the params Tab 
-@($Hierarchy,$Industry,$Company,$Scenario,$DateasDate.tostring("dd-MMM-yy"))  | Export-Excel -AutoSize -WorksheetName Params $NewFileName
+@($Hierarchy,$Industry,$Company,$Scenario,$DateasDate.tostring("dd-MMM-yy"))  | Export-Excel -AutoSize -WorksheetName Params $Result
 
 # Create the new spreadsheet 
-$excel = $data | Export-Excel -AutoSize -AutoFilter -WorksheetName Data $NewFileName -PassThru
+$excel = $data | Export-Excel -AutoSize -AutoFilter -WorksheetName Data $Result -PassThru
 # Get a pointer to the Data Sheet 
 $ws = $excel.Workbook.Worksheets['Data']
 
@@ -218,7 +228,7 @@ Close-ExcelPackage $excel -Calculate
 # Test result spreadsheet - Read it 
 $HeaderList = @('G1','I1','1','2','Amount','Sort_G1','Sort_I1','Sort_CL1','Sort_CL2','SQL1','SQL2','SQL3','SQL4','SQL5','SQL6','SQL7','SQL8','SQL9')
 $HeaderList
-$data = Import-Excel $NewFileName -WorksheetName Data -HeaderName $HeaderList
+$data = Import-Excel $Result -WorksheetName Data -HeaderName $HeaderList
 $data
 
 # Execute the SQL in each and every of the column 1 column at a time
@@ -232,6 +242,21 @@ Execute-SQLColumn -data $data -SQLQuery "SQL6"
 Execute-SQLColumn -data $data -SQLQuery "SQL7"
 Execute-SQLColumn -data $data -SQLQuery "SQL8"
 # Execute-SQLColumn -data $data -SQLQuery "SQL9"
+
+# --------------------------------------------------------------------
+# Process the $Script in order to eliminate duplicate lines 
+# Lines where all prefixed by SQLx where x is the number of the steps
+# if not sort+uniq was reshuffling the order of the steps
+# --------------------------------------------------------------------
+$TempFile2 = New-TemporaryFile 
+cat $TempFile | sort | uniq > ($TempFile2)
+
+# Post precessing the $Script file in order to transform "SQL..EXEC" into EXEC 
+(Get-Content $TempFile2) -replace '^(SQL\d*EXEC )(.*)','EXEC $2' |  Out-File ($Script)
+
+# Eliminate the Temporary files
+rm $TempFile2
+rm $TempFile
 
 "Stage 3 - After Execution/upload of structure - No upload of values"
 exit
