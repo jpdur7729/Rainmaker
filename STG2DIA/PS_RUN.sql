@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-27 16:10:47 jpdur"
+--                     Time-stamp: "2021-02-28 08:53:09 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- All the steps in order to move the data from staging area to DIA 
@@ -8,6 +8,7 @@
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 -- 0) Setup assumed to be made in RM_NODE at the top level for Profit and loss in that case
 -- EXEC STG_DIA_Populate_RM_NODE_Hierarchy 'Profit Loss'
+-- No sequence added ==> To be verified // Not Null as part of the RM_NODE table definition
 -- insert RMX_CollectionRecurrence (Name) VALUES ('Monthly')
 -- insert RMX_ValueType (Name) VALUES ('Default')
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -33,3 +34,4 @@
 -- -- 7) RM_KPICompanyConfigNodeDataItemAssociation
 -- EXEC STG_DIA_Populate_RM_KPICompanyConfigNodeDataItemAssociation 'Profit Loss','Industry 3','TestCo'
 
+ 
