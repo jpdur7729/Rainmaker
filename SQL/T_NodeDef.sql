@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-27 15:01:21 jpdur"
+--                     Time-stamp: "2021-03-01 14:31:12 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- ------------------------------------------------------------------------------
@@ -22,7 +22,9 @@ updatedAt    datetime 		not null, -- Sequelize managed fields
 Name	      varchar(100)  	  NOT NULL, -- DataPoint ID
 Level 	      integer		  NOT NULL, -- Level within a hierarchy
 HierarchyID   varchar(100)	  NOT NULL,  -- Hierarchy definition
-SortOrder     integer		  NOT NULL  DEFAULT 0
+SortOrder     integer		  NOT NULL  DEFAULT 0,
+-- Add this ID to make it unique to idetify the parent without ambiguity
+RM_NODE_ID	UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL
 )
 
 -- Add constraints so that there is only 1 value per date

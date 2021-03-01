@@ -1,9 +1,9 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-01 08:41:36 jpdur"
+--                     Time-stamp: "2021-03-01 14:50:15 jpdur"
 -- ------------------------------------------------------------------------------
 
-CREATE or ALTER PROCEDURE [dbo].[STD_DIA_Populate_RM_KPI_Collection_Batch] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100),
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_Collection_Batch] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100),
 @CollectionDate as date,@ScenarioName as varchar(100))
 as
 BEGIN

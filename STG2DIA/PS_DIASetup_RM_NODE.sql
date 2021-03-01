@@ -1,6 +1,6 @@
 -- -------------------------------------------------------------------------
 --                  Author    : FIS - JPD
---                  Time-stamp: "2021-03-01 07:12:46 jpdur"
+--                  Time-stamp: "2021-03-01 14:30:27 jpdur"
 -- -------------------------------------------------------------------------
 
 -- ------------------------------------------------------------------------------
@@ -41,8 +41,17 @@ BEGIN
      --when MATCHED then
      --	  update SET Sequence = x.Sequence
      when NOT MATCHED then 	  
-     	  INSERT (Name,ParentNodeID,KPITypeID,IsSystemDefined,Sequence)
-	  VALUES (x.Name,x.ParentNodeID,x.KPITypeID,x.IsSystemDefined,x.Sequence) ;
+     	  INSERT (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined,Sequence)
+	  VALUES (NEWID(),x.Name,x.ParentNodeID,x.KPITypeID,x.IsSystemDefined,x.Sequence) ;
+
+     -- Update the STG table i.e. NodeDef with the RM_NODE_ID which have been generated accordingly
+     merge into NodeDef
+     using (
+     	   select ID,KPITypeID,Name from RM_NODE where KPITypeID = @HierarchyID and ParentNodeID is null
+     ) x
+     on x.Name = NodeDef.Name and x.KPITypeID = NodeDef.HierarchyID
+     when matched then
+     	  UPDATE set RM_NODE_ID = x.ID;
 
 END
 GO

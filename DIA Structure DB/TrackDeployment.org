@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------
 #                  Author    : FIS - JPD
-#                  Time-stamp: "2021-03-01 06:59:17 jpdur"
+#                  Time-stamp: "2021-03-01 14:05:20 jpdur"
 # -------------------------------------------------------------------------
 
 create in an order which makes it possible to have all the depencies installed
@@ -33,13 +33,15 @@ create in an order which makes it possible to have all the depencies installed
 | 16 | RMX_WorkflowStatus.sql                                          |               |                |   |
 | 17 | RM_KPI_Collection_Batch.sql                                     |               | 12,13,14,15,16 |   |
 |----+-----------------------------------------------------------------+---------------+----------------+---|
+| 18 | =RM_Attribute.sql=                                                | *JPD PROVIDED*  |                |   |
+| 19 | RM_KPI_Collection_DataItem.sql                                  |               |                |   |
+| 20 | RM_KPI_Collection_Node.sql                                      |               |          18,19 |   |
+| 21 | RM_KPI_Collection_Dimension.sql                                 |               |             20 |   |
+| 22 | RM_KPI_Collection_Batch_Dimension.sql                           |               |             21 |   |
+|----+-----------------------------------------------------------------+---------------+----------------+---|
 |    |                                                                 |               |                |   |
 |    | RM_DataItemAttributeGroupAssociation.sql                        |               |                |   |
 |    | RM_DefaultNodeDataItemAssociation.sql                           |               |                |   |
-|    | RM_KPI_Collection_Batch_Dimension.sql                           |               |                |   |
-|    | RM_KPI_Collection_DataItem.sql                                  |               |                |   |
-|    | RM_KPI_Collection_Dimension.sql                                 |               |                |   |
-|    | RM_KPI_Collection_Node.sql                                      |               |                |   |
 |    | RM_KPICommentaryCompanyAssocation.sql                           |               |                |   |
 |    | RM_KPICommentaryIndustryAssociation.sql                         |               |                |   |
 |    | RM_KPICompanyConfigDataItemAttributeAssociation.sql             |               |                |   |

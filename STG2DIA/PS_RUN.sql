@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-01 08:43:48 jpdur"
+--                     Time-stamp: "2021-03-01 14:10:37 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- All the steps in order to move the data from staging area to DIA 
@@ -15,6 +15,7 @@
 -- insert RM_ClassType (Name) VALUES ('Default')
 -- insert RMX_CollectionPeriod (Name) VALUES ('Monthly')
 -- insert RM_Workflow (Name) VALUES ('Default')
+-- insert RM_Attribute (Name) VALUES ('Default')
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 -- -- 1) RM_Node 
@@ -41,5 +42,14 @@
 ------------------------------------------------------------------------------
 -- Uploading the actual values/datapoint
 ------------------------------------------------------------------------------
-EXEC STD_DIA_Populate_RM_KPI_Collection_Batch 'Profit Loss','Industry 3','TestCo','30-Oct-2020','Actual'
+-- -- 8) RM_KPI_Collection_Batch
+EXEC STG_DIA_Populate_RM_KPI_Collection_Batch 'Profit Loss','Industry 3','TestCo','31-Oct-2020','Actual'
 
+-- -- 9) RM_KPI_Collection_Node
+EXEC STG_DIA_Populate_RM_KPI_Collection_Node 'Profit Loss','Industry 3','TestCo'
+
+-- -- 10) RM_KPI_Collection_DataItem
+
+
+
+-- -- 12) RM_KPI_Colletion_Batch_Dimension
