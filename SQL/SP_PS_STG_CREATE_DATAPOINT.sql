@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-01 09:51:47 jpdur"
+--                     Time-stamp: "2021-03-01 10:17:24 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- Version 1 add if data point is defined at company level 1 or 2
@@ -17,7 +17,7 @@ declare @IDTable  table
                                  
 -- insert into @ListLinks
 insert @IDTable         
-       EXEC Create_datapoint_internal @NodeDefID,@CompanyID 
+       EXEC PS_STG_Create_datapoint_internal @NodeDefID,@CompanyID 
 
 -- Copy the ID in the output parameter 
 set @ResID = (select ID from @IDTable)        
