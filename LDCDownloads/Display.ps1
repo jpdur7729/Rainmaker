@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : F2 - JPD
-#                     Time-stamp: "2021-03-01 11:16:14 jpdur"
+#                     Time-stamp: "2021-03-01 11:22:09 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -78,14 +78,15 @@ $query3 = "EXEC PS_STG_DISPLAY_HIERARCHY_INDUSTRY_COMPANY '$HierarchyName','$Ind
 $data_query3 = Invoke-DbaQuery -SqlInstance $DatabaseInstance -Database $DataBase -Query $query3 | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
 $listqueries += $query3
 
-# # # Query4
-# $query4 = "EXEC PS_STG_DISPLAY_HIERARCHY_INDUSTRY_DATA @HierarchyName,@IndustryName,@CompanyName,'Actual','31-Oct-20'"
-# $data_query4 = Invoke-DbaQuery -SqlInstance $DatabaseInstance -Database $DataBase -Query $query4 | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
-# $listqueries += $query4
+# Query4
+# $query4 = "EXEC PS_STG_DISPLAY_HIERARCHY_INDUSTRY_DATA '$HierarchyName','$IndustryName','$CompanyName','$Scenario','$CollectionDate'"
+$query4 = "EXEC PS_STG_DISPLAY_COLLECTION_DATA '$HierarchyName','$IndustryName','$CompanyName','$Scenario','$CollectionDate'"
+$data_query4 = Invoke-DbaQuery -SqlInstance $DatabaseInstance -Database $DataBase -Query $query4 | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
+$listqueries += $query4
 
 # Display the results
 $data_query1 | Export-Excel -AutoSize -AutoFilter -WorksheetName "Level1"            $Result
 $data_query2 | Export-Excel -AutoSize -AutoFilter -WorksheetName "Level1-Industry"   $Result
 $data_query3 | Export-Excel -AutoSize -AutoFilter -WorksheetName "Full Structure"    $Result
-# $data_query4 | Export-Excel -AutoSize -AutoFilter -WorksheetName "Data"              $Result
+$data_query4 | Export-Excel -AutoSize -AutoFilter -WorksheetName "Data"              $Result
 $listqueries | Export-Excel -Show -AutoSize -WorksheetName Query                     $Result
