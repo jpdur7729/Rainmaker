@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-28 08:53:09 jpdur"
+--                     Time-stamp: "2021-03-01 08:43:48 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- All the steps in order to move the data from staging area to DIA 
@@ -11,6 +11,10 @@
 -- No sequence added ==> To be verified // Not Null as part of the RM_NODE table definition
 -- insert RMX_CollectionRecurrence (Name) VALUES ('Monthly')
 -- insert RMX_ValueType (Name) VALUES ('Default')
+-- insert RMX_BatchStatus (Name) VALUES ('Default')
+-- insert RM_ClassType (Name) VALUES ('Default')
+-- insert RMX_CollectionPeriod (Name) VALUES ('Monthly')
+-- insert RM_Workflow (Name) VALUES ('Default')
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 -- -- 1) RM_Node 
@@ -34,4 +38,8 @@
 -- -- 7) RM_KPICompanyConfigNodeDataItemAssociation
 -- EXEC STG_DIA_Populate_RM_KPICompanyConfigNodeDataItemAssociation 'Profit Loss','Industry 3','TestCo'
 
- 
+------------------------------------------------------------------------------
+-- Uploading the actual values/datapoint
+------------------------------------------------------------------------------
+EXEC STD_DIA_Populate_RM_KPI_Collection_Batch 'Profit Loss','Industry 3','TestCo','30-Oct-2020','Actual'
+

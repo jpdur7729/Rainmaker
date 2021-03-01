@@ -39,3 +39,5 @@ EXEC STG_DIA_Populate_RM_KPICompanyConfigNodeDataItemAssociation @HierarchyName,
 
 END
 GO
+
+-- EXEC STG_DIA_DeployStructure 'Profit Loss','Industry 3','TestCo'
