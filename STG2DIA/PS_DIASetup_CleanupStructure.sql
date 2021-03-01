@@ -1,10 +1,11 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-01 07:20:25 jpdur"
+--                     Time-stamp: "2021-03-01 15:01:57 jpdur"
 -- ------------------------------------------------------------------------------
 
 delete from RM_KPI_Collection_Batch
-delete from RM_Workflow
+-- To be replace by the official version 
+-- delete from RM_Workflow
 delete from RM_KPICompanyConfigNodeDataItemAssociation     
 delete from RM_DataItem                                    
 delete from RM_KPICompanyConfigNodeAssociation             
