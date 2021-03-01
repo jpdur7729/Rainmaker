@@ -27,26 +27,29 @@ Using a specific DIA database with 2 set of tables:
 
 ## Directory Structure
 
-| Directory        | Git | Description                                         |
-|------------------|-----|-----------------------------------------------------|
-| DIA Structure DB | Y   | The scripts provided by Kumar                       |
-|                  |     | To create the DIA Tables                            |
-|                  |     | Documentation related to DIA Data Model             |
-| LDCCSVDownloads  | Y   | CSV as received from LDC                            |
-|                  |     | With processing scripts to transform into XLSX      |
-| LDCDownloads     | Y   | The place where the XLSX spreadsheets are processed |
-|                  |     | i.e. entered into the STAGING Tables                |
-| SQL              | Y   | The key SQL files for Staging Tables                |
-|                  |     | 1\) Create Tables T<sub>XXX</sub>.sql               |
-|                  |     | 2\) Stored Procedures SP<sub>XXX</sub>.sql          |
-|                  |     | 3\) Views V<sub>XXX</sub>.sql                       |
-|                  |     | 4\) Other SQL files                                 |
-| STG2DIA          | Y   | All the Scripts to move data from STAGING to DIA    |
-| LDC Templates    |     | No sure of the contents                             |
-| Data - JPD       |     |                                                     |
-| Ref Files        |     | ?? Useful ??                                        |
-| CSV - Feb 22nd   | N   | Files sent by LDC for test                          |
-|                  |     | Not to be processed                                 |
+| Directory        | Git | Description                                             |
+|------------------|-----|---------------------------------------------------------|
+| DIA Structure DB | Y   | The scripts provided by Kumar                           |
+|                  |     | To create the DIA Tables                                |
+|                  |     | Documentation related to DIA Data Model                 |
+| LDCCSVDownloads  | Y   | CSV as received from LDC                                |
+|                  |     | With processing scripts to transform into XLSX          |
+| LDCDownloads     | Y   | The place where the XLSX spreadsheets are processed     |
+|                  |     | i.e. entered into the STAGING Tables                    |
+|                  |     | The PS scripts are found in that directory              |
+| SQL              | Y   | The key SQL files for Staging Tables                    |
+|                  |     | 1\) Create Tables T<sub>XXX</sub>.sql                   |
+|                  |     | 2\) Stored Procedures SP<sub>XXX</sub>.sql              |
+|                  |     | 3\) Views V<sub>XXX</sub>.sql                           |
+|                  |     | 4\) Other SQL files                                     |
+| STG2DIA          | Y   | All the SQL Scripts to move data from STAGING to DIA    |
+| STGDisplay       | Y   | All the SQL Scripts to display uploaded data using only |
+|                  |     | the STAGING tables                                      |
+| LDC Templates    |     | No sure of the contents                                 |
+| Data - JPD       |     |                                                         |
+| Ref Files        |     | ?? Useful ??                                            |
+| CSV - Feb 22nd   | N   | Files sent by LDC for test                              |
+|                  |     | Not to be processed                                     |
 
 # Principles
 
@@ -99,3 +102,21 @@ Once in the staging tables, then the data is copied into the
 RM<sub>XXX</sub> tables by running PS<sub>RUN</sub>.SQL
 
 ## DataPoint Capture
+
+Reading the test spreadsheet it is possible to generate only the script
+to be executed in order to upload the DataPoint values in the STG tables
+(i.e. DataPointValues and DataPointMapping)
+
+In order to do that ./Normalise -Scope "DataPointOnly" -Action
+GenerateSQLScript generates a SQL script ready to be deployed in a file
+called /Results.sql
+
+### <span class="todo TODO">TODO</span> Parameters of CLI Commands
+
+Detailing the parameters used in order to generate the scripts and/or
+execute them immediately
+
+## Displaying Results
+
+Generate a spreadsheet in order to verify - based on the Staging Tables
+- the contents of what has been uploaded
