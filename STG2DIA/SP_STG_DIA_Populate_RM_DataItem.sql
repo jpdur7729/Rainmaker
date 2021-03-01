@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-27 16:38:59 jpdur"
+--                     Time-stamp: "2021-03-01 16:01:39 jpdur"
 -- ------------------------------------------------------------------------------
 
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_DataItem] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
@@ -49,8 +49,8 @@ BEGIN
       ) x
       on x.Name = RM_DI.Name and x.IndustryID = RM_DI.IndustryID and x.KPITypeId = RM_DI.KPITypeID
       WHEN NOT MATCHED then
-      	   INSERT (IndustryID,KPITypeID,IsDebit,IsAggregate,Scale,ValueTypeID,Name)
-	   VALUES (x.IndustryID,x.KPITypeID,x.IsDebit,x.IsAggregate,x.Scale,x.ValueTypeID,x.Name) ;
+      	   INSERT (ID,IndustryID,KPITypeID,IsDebit,IsAggregate,Scale,ValueTypeID,Name,createdOn)
+	   VALUES (NEWID(),x.IndustryID,x.KPITypeID,x.IsDebit,x.IsAggregate,x.Scale,x.ValueTypeID,x.Name,getdate()) ;
       
 END
 GO
