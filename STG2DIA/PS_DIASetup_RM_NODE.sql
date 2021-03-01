@@ -1,6 +1,6 @@
 -- -------------------------------------------------------------------------
 --                  Author    : FIS - JPD
---                  Time-stamp: "2021-02-27 08:35:49 jpdur"
+--                  Time-stamp: "2021-03-01 07:12:46 jpdur"
 -- -------------------------------------------------------------------------
 
 -- ------------------------------------------------------------------------------
@@ -20,10 +20,29 @@ BEGIN
      declare @IsSystemDefined as BIT
      set @IsSystemDefined = 1
 
-     INSERT INTO RM_NODE (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined)
-     	     select NEWID(),Name,null,@HierarchyID,@IsSystemDefined from NodeDef 
-	     WHERE HierarchyID = @HierarchyID
+     -- At that top level the name is obviously unique for the given hierarchy 
+     -- INSERT INTO RM_NODE (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined,Sequence)
+     -- 	     select NEWID(),Name,null,@HierarchyID,@IsSystemDefined,SortOrder from NodeDef 
+     -- 	     WHERE HierarchyID = @HierarchyID
 
+     -- -------------------------------------------------------------
+     -- Merge to be preferred even if currently supposedly not used
+     -- At least a simple way to update the Sequence data
+     -- -------------------------------------------------------------
+     merge into RM_NODE
+     using (
+     	     select Name,null as ParentNodeID,@HierarchyID as KPITypeID,
+	     	    @IsSystemDefined as IsSystemDefined,SortOrder as Sequence
+	     from NodeDef 
+	     WHERE HierarchyID = @HierarchyID
+     ) x
+	 -- testing null = null does not work ==> hence this approach with a random unique identifier
+     on RM_NODE.Name = x.Name and x.KPITypeID = RM_NODE.KPITypeID and coalesce(RM_NODE.ParentNodeID,'83126602-5B41-405B-ACB2-868FDDF49A29') = coalesce(x.ParentNodeID,'83126602-5B41-405B-ACB2-868FDDF49A29')
+     --when MATCHED then
+     --	  update SET Sequence = x.Sequence
+     when NOT MATCHED then 	  
+     	  INSERT (Name,ParentNodeID,KPITypeID,IsSystemDefined,Sequence)
+	  VALUES (x.Name,x.ParentNodeID,x.KPITypeID,x.IsSystemDefined,x.Sequence) ;
 
 END
 GO
@@ -31,5 +50,5 @@ GO
 -- Cleanup
 -- truncate table RM_NODE
 
-EXEC STG_DIA_Populate_RM_NODE_Hierarchy 'Profit Loss'
+-- EXEC STG_DIA_Populate_RM_NODE_Hierarchy 'Profit Loss'
 
