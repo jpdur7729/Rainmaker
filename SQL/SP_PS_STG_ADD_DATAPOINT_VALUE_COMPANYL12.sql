@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-01 09:51:28 jpdur"
+--                     Time-stamp: "2021-03-01 09:56:43 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- Version 1 add if data point is defined at company level 1 or 2
@@ -30,13 +30,13 @@ BEGIN
       end 
       -- Get the DataPointValue ID corresponding to that NodeCompany
       declare @DPVID as varchar(36)
-      EXEC CREATE_DATAPOINT @NodeID,@CompanyID,@DPVID OUTPUT
+      EXEC PS_STG_CREATE_DATAPOINT @NodeID,@CompanyID,@DPVID OUTPUT
 
       -- Debug
       -- select @DPVID
 
       -- Add the Value within the structure
-      EXEC ADD_DATAPOINT_VALUE @DPVID,@Scenario ,@DateValue ,@Amount 
+      EXEC PS_STG_ADD_DATAPOINT_VALUE @DPVID,@Scenario ,@DateValue ,@Amount 
 
 END
 GO
