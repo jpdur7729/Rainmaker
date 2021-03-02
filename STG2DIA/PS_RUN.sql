@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-01 16:40:56 jpdur"
+--                     Time-stamp: "2021-03-01 17:02:58 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- All the steps in order to move the data from staging area to DIA 
@@ -53,3 +53,6 @@ EXEC STG_DIA_Populate_RM_KPI_Collection_DataItem 'Profit Loss','Industry 3','Tes
 
 -- -- 12) RM_KPI_Collection_Dimension
 EXEC STG_DIA_Populate_RM_KPI_Collection_Dimension 'Profit Loss','Industry 3','TestCo'
+
+-- -- 13) RM_KPI_Collection_Batch_Dimension
+EXEC STG_DIA_Populate_RM_KPI_Collection_Batch_Dimension 'Profit Loss','Industry 3','TestCo','31-Oct-2020','Actual'
