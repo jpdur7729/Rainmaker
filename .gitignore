@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-02 13:46:48 jpdur"
+#                     Time-stamp: "2021-03-02 14:12:54 jpdur"
 # ------------------------------------------------------------------------------
 
 # Directories not to be included as not ready yet
@@ -19,6 +19,7 @@ makefile
 *.xlsx
 *.zip
 *.bak
+*.pptxTime
 
 # All Images
 *.png
