@@ -120,3 +120,17 @@ execute them immediately
 
 Generate a spreadsheet in order to verify - based on the Staging Tables
 - the contents of what has been uploaded
+
+# Deployment
+
+2 key bat files to deploy:
+
+1.  via **DeploymentSTG.bat** The staging tables, views, Stored
+    Procedures
+2.  via **DeploymentDIA.bat** The Stored Procedures to upload into
+    RM<sub>xxx</sub> tables
+
+These files need to be modified before usage to verify:
+
+-   The correct SQL server
+-   The correct Database

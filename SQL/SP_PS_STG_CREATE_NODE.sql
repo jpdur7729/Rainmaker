@@ -19,9 +19,10 @@ merge into NodeDef using (
       ) x
       on x.Name = NodeDef.Name and x.Level = NodeDef.Level and x.HierarchyID = NodeDef.HierarchyID
       WHEN NOT MATCHED THEN
-      INSERT VALUES (NEWID(),'JPDUR',getdate(),getdate(),x.Name,x.Level,x.HierarchyID,@SortOrder)
+      	   INSERT (ID,LastUser,createdAt,updatedAt,Name,Level,HierarchyID,SortOrder)
+      	   VALUES (NEWID(),'JPDUR',getdate(),getdate(),x.Name,x.Level,x.HierarchyID,@SortOrder)
       WHEN MATCHED THEN
-      UPDATE set SortOrder = @SortOrder;
+      	   UPDATE set SortOrder = @SortOrder;
 
 END
 GO
