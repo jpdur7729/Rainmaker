@@ -10,7 +10,7 @@ as
 BEGIN
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 -- 0) Setup assumed to be made in RM_NODE at the top level for Profit and loss in that case
--- EXEC STG_DIA_Populate_RM_NODE_Hierarchy 'Profit Loss'
+-- EXEC STG_DIA_Populate_RM_NODE_Hierarchy 'Income Statement'
 -- No sequence added ==> To be verified // Not Null as part of the RM_NODE table definition
 -- insert RMX_CollectionRecurrence (Name) VALUES ('Monthly')
 -- insert RMX_ValueType (Name) VALUES ('Default')
@@ -40,4 +40,4 @@ EXEC STG_DIA_Populate_RM_KPICompanyConfigNodeDataItemAssociation @HierarchyName,
 END
 GO
 
--- EXEC STG_DIA_DeployStructure 'Profit Loss','Industry 3','TestCo'
+-- EXEC STG_DIA_DeployStructure 'Income Statement','Industry 3','TestCo'

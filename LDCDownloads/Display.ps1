@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-02 14:51:15 jpdur"
+#                     Time-stamp: "2021-03-04 14:47:07 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -10,7 +10,7 @@ param(
     [Parameter(Mandatory=$false)] [string] $Database = "DIA",
     [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly","DataPointOnly","All")] [string] $Scope = "StructureOnly",
     [Parameter(Mandatory=$false)] [ValidateSet("Level1Only","Industry","All")] [string] $Level = "All",
-    [Parameter(Mandatory=$false)] [string] $HierarchyName  = "Profit Loss",
+    [Parameter(Mandatory=$false)] [string] $HierarchyName  = "Income Statement",
     [Parameter(Mandatory=$false)] [string] $IndustryName = "Industry 3",
     [Parameter(Mandatory=$false)] [string] $CompanyName = "TestCo",
     [Parameter(Mandatory=$false)] [string] $Scenario = "Actual",

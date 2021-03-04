@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-01 08:57:12 jpdur"
+#                     Time-stamp: "2021-03-04 14:42:34 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -130,8 +130,8 @@ $Industry = $data_query1.Name
 # Normalise the Hierarchy
 switch($Hierarchy)
 {
-    # 'PL' {$Hierarchy = "Income Statement"}
-    'PL' {$Hierarchy = "Profit Loss"}
+    'PL' {$Hierarchy = "Income Statement"}
+    # 'PL' {$Hierarchy = "Profit Loss"}
     'BS' {$Hierarchy = "Balance Sheet"}
 }
 $Hierarchy

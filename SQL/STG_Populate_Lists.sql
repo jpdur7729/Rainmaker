@@ -8,7 +8,7 @@
 -- Definition of 3 high level hierarchies
 insert into HierarchyList values (NEWID(),'JPDUR',getdate(),getdate(),'Balance Sheet')
 insert into HierarchyList values (NEWID(),'JPDUR',getdate(),getdate(),'Income Statement')
-insert into HierarchyList values (NEWID(),'JPDUR',getdate(),getdate(),'Profit Loss')
+-- insert into HierarchyList values (NEWID(),'JPDUR',getdate(),getdate(),'Profit Loss')
 select Name from HierarchyList
 
 -- Definition of 3 Industries

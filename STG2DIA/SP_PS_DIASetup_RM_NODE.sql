@@ -59,5 +59,5 @@ GO
 -- Cleanup
 -- truncate table RM_NODE
 
--- EXEC STG_DIA_Populate_RM_NODE_Hierarchy 'Profit Loss'
+-- EXEC STG_DIA_Populate_RM_NODE_Hierarchy 'Income Statement'
 

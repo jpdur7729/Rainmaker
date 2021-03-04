@@ -3,6 +3,9 @@
 --                  Time-stamp: "2021-02-26 07:04:55 jpdur"
 -- -------------------------------------------------------------------------
 
+-- Does not anything any longer // Replace by Default Values 
+
+
 -- ----------------------------------------------------------------------------------------
 -- Add in the KPI Type (Balance Sheet,Income Statement) then later on Cash Flow
 -- Extra precaution --> The name of the KPIType is assumed to be unique to prevent issues
@@ -22,8 +25,8 @@ BEGIN
 END
 GO
 
-EXEC PS_Populate_KPIType 'Balance Sheet'
-EXEC PS_Populate_KPIType 'Income Statement'
-EXEC PS_Populate_KPIType 'Profit Loss'
+-- EXEC PS_Populate_KPIType 'Balance Sheet'
+-- EXEC PS_Populate_KPIType 'Income Statement'
+-- EXEC PS_Populate_KPIType 'Profit Loss'
 
 select * from RMX_KPIType

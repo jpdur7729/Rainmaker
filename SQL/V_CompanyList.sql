@@ -26,6 +26,7 @@ GO
 create or alter view CompanyList
 as 
 	Select Id as ID, InvCompanyName as Name,InvIndustry as IndustryID from RM_Company
+GO
 
--- Verification that the 2 reference tables are linked 
+-- Verification that the 2 reference tables are linked
 select * from CompanyList cl ,IndustryList il where cl.IndustryID = il.ID

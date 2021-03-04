@@ -26,7 +26,8 @@ BEGIN
       declare @ScenarioTypeID as nvarchar(36)
       set @ScenarioTypeID = (select ID from RM_ClassType where Name = 'Default')
       declare @BatchStatusID as nvarchar(36)
-      set @BatchStatusID = (select ID from RMX_BatchStatus where Name = 'Default')
+      -- set @BatchStatusID = (select ID from RMX_BatchStatus where Name = 'Default')
+      set @BatchStatusID = (select ID from RMX_BatchStatus where Name = 'Draft')
       declare @CollectionPeriodID as nvarchar(36)
       set @CollectionPeriodID = (select ID from RMX_CollectionPeriod where Name = 'Monthly')
 
