@@ -3,7 +3,7 @@
 --                     Time-stamp: "2021-03-01 14:50:15 jpdur"
 -- ------------------------------------------------------------------------------
 
-CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_Collection_Batch] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100),
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_Workflow] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100),
 @CollectionDate as date,@ScenarioName as varchar(100))
 as
 BEGIN
@@ -30,7 +30,6 @@ BEGIN
       set @BatchStatusID = (select ID from RMX_BatchStatus where Name = 'Draft')
       declare @CollectionPeriodID as nvarchar(36)
       set @CollectionPeriodID = (select ID from RMX_CollectionPeriod where Name = 'Monthly')
-
       declare @WorkflowStatusID as nvarchar(36)
       set @WorkflowStatusID = (select ID from RMX_WorkflowStatus where Name = 'Not Started')
 
@@ -45,23 +44,17 @@ BEGIN
 		 where ID = @HierarchyID
       ))
 
-      -- Extra WorkflowID
-      declare @WorkflowID as nvarchar(36)
-      set @WorkflowID = (select ID from RM_Workflow where CompanyID = @CompanyID and EffectiveDate = @CollectionDate and WorkflowStatusID = @WorkflowStatusID)
-      
       -- Merge into the Table
-      merge into RM_KPI_Collection_Batch as KCB
+      merge into RM_Workflow as RW
       using (
-      	    select @HierarchyID as KPITypeID, @CollectionDate as ReportingDate,
-	    	   @WorkflowID as WorkflowID, @CompanyID as CompanyID,
-		   @CollectionPeriodID as CollectionPeriodID, @BatchStatusID as BatchStatusID,
-		   @ScenarioTypeID as ScenarioTypeID
+      	    select @KPICategoryID as KPICategoryID, @CollectionDate as EffectiveDate,
+	    	   @WorkflowStatusID  as WorkflowStatusID , @CompanyID as CompanyID
       ) x
-      on x.KPITypeID = KCB.KPITypeID and x.WorkflowID = KCB.WorkflowID and x.CompanyID = KCB.CompanyID
-      	 and x.ReportingDate = KCB.ReportingDate and x.ScenarioTypeID = KCB.ScenarioTypeID
+      on x.KPICategoryID = RW.KPICategoryID and x.CompanyID = RW.CompanyID
+      	 and x.EffectiveDate = RW.EffectiveDate and x.WorkflowStatusID = RW.WorkflowStatusID
       when NOT MATCHED then
-      	   INSERT (KPITypeID,ReportingDate,CompanyID,CollectionPeriodID,WorkflowID,ScenarioTypeID,BatchStatusID,CreatedOn)
-	   VALUES (x.KPITypeID,x.ReportingDate,x.CompanyID,x.CollectionPeriodID,x.WorkflowID,x.ScenarioTypeID,x.BatchStatusID,getdate()) ;
+      	   INSERT (ID,KPICategoryID,EffectiveDate,WorkflowStatusID,CompanyID,StatusDate)
+	   VALUES (NEWID(),x.KPICategoryID,x.EffectiveDate,x.WorkflowStatusID,x.CompanyID,getdate());
 
 END
 GO

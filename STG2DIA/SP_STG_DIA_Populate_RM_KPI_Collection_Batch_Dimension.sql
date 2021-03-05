@@ -21,6 +21,8 @@ BEGIN
       declare @KPICompanyConfigurationID as nvarchar(36)
       set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
       set @KPICompanyConfigurationID = (select ID from RM_KPICompanyConfiguration where CompanyID = @CompanyID )
+      declare @WorkflowStatusID as nvarchar(36)
+      set @WorkflowStatusID = (select ID from RMX_WorkflowStatus where Name = 'Not Started')
 
       -- Extra Parameters or Default Value
       declare @ScenarioTypeID as nvarchar(36)
@@ -28,7 +30,7 @@ BEGIN
 
       -- Extra WorkflowID
       declare @WorkflowID as nvarchar(36)
-      set @WorkflowID = (select top 1 ID from RM_Workflow)
+      set @WorkflowID = (select ID from RM_Workflow where CompanyID = @CompanyID and EffectiveDate = @CollectionDate and WorkflowStatusID = @WorkflowStatusID)
 
       -- Extra AttributeID
       declare @AttributeID as nvarchar(36)

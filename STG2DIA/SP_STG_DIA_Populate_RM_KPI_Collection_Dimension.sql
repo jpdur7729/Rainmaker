@@ -3,7 +3,8 @@
 --                     Time-stamp: "2021-03-01 16:59:37 jpdur"
 -- ------------------------------------------------------------------------------
 
-CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_Collection_Dimension] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_Collection_Dimension] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100),
+@CollectionDate as date,@ScenarioName as varchar(100))
 as
 BEGIN
 
@@ -21,9 +22,12 @@ BEGIN
       set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
       set @KPICompanyConfigurationID = (select ID from RM_KPICompanyConfiguration where CompanyID = @CompanyID )
 
+      declare @WorkflowStatusID as nvarchar(36)
+      set @WorkflowStatusID = (select ID from RMX_WorkflowStatus where Name = 'Not Started')
+      
       -- Extra WorkflowID
       declare @WorkflowID as nvarchar(36)
-      set @WorkflowID = (select top 1 ID from RM_Workflow)
+      set @WorkflowID = (select ID from RM_Workflow where CompanyID = @CompanyID and EffectiveDate = @CollectionDate and WorkflowStatusID = @WorkflowStatusID)
 
       -- Extra AttributeID
       declare @AttributeID as nvarchar(36)

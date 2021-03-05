@@ -1,13 +1,13 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-04 14:47:07 jpdur"
+#                     Time-stamp: "2021-03-04 16:23:05 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
     [Parameter(Mandatory=$false)] [string] $Exec_Dir = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition),
     [Parameter(Mandatory=$false)] [string] $Result = "ResultsDisplay.xlsx",
     [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
-    [Parameter(Mandatory=$false)] [string] $Database = "DIA",
+    [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
     [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly","DataPointOnly","All")] [string] $Scope = "StructureOnly",
     [Parameter(Mandatory=$false)] [ValidateSet("Level1Only","Industry","All")] [string] $Level = "All",
     [Parameter(Mandatory=$false)] [string] $HierarchyName  = "Income Statement",

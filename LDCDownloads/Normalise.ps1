@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-04 14:42:34 jpdur"
+#                     Time-stamp: "2021-03-04 16:20:31 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -8,7 +8,7 @@ param(
     [Parameter(Mandatory=$false)] [string] $Source = "6_Output_1_FIS_TestCo_2020_10_PL_AC_20210108 2203.xlsx",
     [Parameter(Mandatory=$false)] [string] $Result = "Results.xlsx",
     [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
-    [Parameter(Mandatory=$false)] [string] $Database = "DIA",
+    [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
     [Parameter(Mandatory=$false)] [ValidateSet("runSQL","GenerateSQLScript")] [string] $Action = "runSQL",
     [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly","DataPointOnly","All")] [string] $Scope = "StructureOnly",
     [Parameter(Mandatory=$false)] [string] $Script = "Results.sql"

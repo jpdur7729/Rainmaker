@@ -3,7 +3,8 @@
 --                     Time-stamp: "2021-03-01 15:44:39 jpdur"
 -- ------------------------------------------------------------------------------
 
-CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_Collection_Node ] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_Collection_Node ] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) ,
+@CollectionDate as date,@ScenarioName as varchar(100))
 as
 BEGIN
 
@@ -21,9 +22,12 @@ BEGIN
       set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
       set @KPICompanyConfigurationID = (select ID from RM_KPICompanyConfiguration where CompanyID = @CompanyID )
 
+      declare @WorkflowStatusID as nvarchar(36)
+      set @WorkflowStatusID = (select ID from RMX_WorkflowStatus where Name = 'Not Started')
+
       -- Extra WorkflowID
       declare @WorkflowID as nvarchar(36)
-      set @WorkflowID = (select top 1 ID from RM_Workflow)
+      set @WorkflowID = (select ID from RM_Workflow where CompanyID = @CompanyID and EffectiveDate = @CollectionDate and WorkflowStatusID = @WorkflowStatusID)
 
       -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       -- 2 stages: 1 Insert the nodes with their description/sequence // No ParentKPICollectionNodeID

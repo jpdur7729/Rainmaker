@@ -42,17 +42,21 @@
 ------------------------------------------------------------------------------
 -- Uploading the actual values/datapoint
 ------------------------------------------------------------------------------
+
+-- -- 7BIS) RM_Workflow
+EXEC STG_DIA_Populate_RM_KPI_Workflow 'Income Statement','Industry 3','TestCo','31-Oct-2020','Actuals'
+
 -- -- 8) RM_KPI_Collection_Batch
-EXEC STG_DIA_Populate_RM_KPI_Collection_Batch 'Income Statement','Industry 3','TestCo','31-Oct-2020','Actual'
+EXEC STG_DIA_Populate_RM_KPI_Collection_Batch 'Income Statement','Industry 3','TestCo','31-Oct-2020','Actuals'
 
 -- -- 9) RM_KPI_Collection_Node
-EXEC STG_DIA_Populate_RM_KPI_Collection_Node 'Income Statement','Industry 3','TestCo'
+EXEC STG_DIA_Populate_RM_KPI_Collection_Node 'Income Statement','Industry 3','TestCo','31-Oct-2020','Actuals'
 
 -- -- 10) RM_KPI_Collection_DataItem
-EXEC STG_DIA_Populate_RM_KPI_Collection_DataItem 'Income Statement','Industry 3','TestCo'
+EXEC STG_DIA_Populate_RM_KPI_Collection_DataItem 'Income Statement','Industry 3','TestCo','31-Oct-2020','Actuals'
 
 -- -- 12) RM_KPI_Collection_Dimension
-EXEC STG_DIA_Populate_RM_KPI_Collection_Dimension 'Income Statement','Industry 3','TestCo'
+EXEC STG_DIA_Populate_RM_KPI_Collection_Dimension 'Income Statement','Industry 3','TestCo','31-Oct-2020','Actuals'
 
 -- -- 13) RM_KPI_Collection_Batch_Dimension
-EXEC STG_DIA_Populate_RM_KPI_Collection_Batch_Dimension 'Income Statement','Industry 3','TestCo','31-Oct-2020','Actual'
+EXEC STG_DIA_Populate_RM_KPI_Collection_Batch_Dimension 'Income Statement','Industry 3','TestCo','31-Oct-2020','Actuals'

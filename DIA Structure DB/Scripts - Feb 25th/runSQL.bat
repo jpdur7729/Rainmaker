@@ -1,7 +1,7 @@
 @echo off 
 rem -------------------------------------------------------------------------
 rem                  Author    : FIS - JPD
-rem                  Time-stamp: "2021-02-26 08:33:31 jpdur"
+rem                  Time-stamp: "2021-03-04 16:19:52 jpdur"
 rem -------------------------------------------------------------------------
 
 rem @echo off // @echo on to just see the result of the execution 
@@ -14,7 +14,7 @@ rem DIA
 rem sa
 rem resn0_gesl0
 
-SET SQLCMD=sqlcmd -S DESKTOP-9CUFF1O\JPDURANDEAU -d DIA -U sa -P resn0_gesl0
+SET SQLCMD=sqlcmd -S DESKTOP-9CUFF1O\JPDURANDEAU -d DIA2 -U sa -P resn0_gesl0
 
 rem for all files 
 rem for %%d in (*.sql) do %SQLCMD% -i%%d
