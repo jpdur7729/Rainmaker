@@ -24,7 +24,7 @@ GO
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 -- Step 2 // Creates the view accordingly
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-create or alter view IndustryList
+create or alter VIEW IndustryList
 as
 	Select Id as ID, InvIndustryName as Name from RM_Industry
 

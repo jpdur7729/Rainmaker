@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-05 14:42:50 jpdur"
+#                     Time-stamp: "2021-03-05 14:50:12 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
     [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
     [Parameter(Mandatory=$false)] [ValidateSet("runSQL","GenerateSQLScript")] [string] $Action = "runSQL",
-    [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly","DataPointOnly","All")] [string] $Scope = "StructureOnly",
+    [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly")] [string] $Scope = "StructureOnly",
     [Parameter(Mandatory=$false)] [string] $Script = "Onboarding.sql"
 )
 
@@ -181,51 +181,10 @@ Set-ExcelColumn -Worksheet $ws -Heading "SQL8" -Column 17 -AutoSize -Value {("=I
 # Different from Export-Excel -ExcelPackage $excel -Calculate which requires to actually save the file
 Close-ExcelPackage $excel -Calculate
 
-# # Add the ordering columns in order to prepare the node insertion
-# # =IF(A1=A2,F1,F1+1)
-# Set-ExcelColumn -Worksheet $ws -Heading "0"   -Column 6 -AutoSize -Value {("=IF(A$row=A$($row-1),F$($row-1),F$($row-1)+1)") }
-# # =IF(B1=B2,G1,G1+1)
-# Set-ExcelColumn -Worksheet $ws -Heading "0"   -Column 7 -AutoSize -Value {("=IF(B$row=B$($row-1),G$($row-1),G$($row-1)+1)") }
-# # =IF(C1=C2,H1,H1+1)
-# Set-ExcelColumn -Worksheet $ws -Heading "0"   -Column 8 -AutoSize -Value {("=IF(C$row=C$($row-1),H$($row-1),H$($row-1)+1)") }
-# # IF(LEN(D2)=0,0,IF(C1<>C2,1,I1+1))
-# Set-ExcelColumn -Worksheet $ws -Heading "2"   -Column 9 -AutoSize -Value {("=IF(LEN(D$row)=0,0,IF(C$row<>C$($row-1),1,I$($row-1)+1))") }
-
-# # Levels before Company Level
-# # ="EXEC PS_STG_CREATE_NODE  '"&A2&"','"&Params!$A$1&"',"&F2
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL1" -Column 10 -AutoSize -Value {("=""EXEC PS_STG_CREATE_NODE '""&A$row&""' , '""&Params!`$A`$1&""' , ""&F$row&""      """) }
-# # "EXEC PS_STG_LINK_GENERIC '"&Params!$A$1&"','"&A2&"','"&Params!$A$1&"'"
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL2" -Column 11 -AutoSize -Value {("=""EXEC PS_STG_LINK_GENERIC '""&Params!`$A`$1&""' , '""&A$row&""' , '""&Params!`$A`$1&""'   """) }
-# # ="EXEC PS_STG_CREATE_NODEINDUSTRY '"&B2&"','"&Params!$A$1&"','"&Params!$A$2&"','"&A2&"' ," &G2
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL3" -Column 12 -AutoSize -Value {("=""EXEC PS_STG_CREATE_NODEINDUSTRY '""&B$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&A$row&""' , ""&G$row&""  """) }
-# # ="EXEC PS_STG_LINK_GENERIC_INDUSTRY '"&A2&"','"&B2&"','"&Params!$A$1&"','"&Params!$A$2&"'"
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL4" -Column 13 -AutoSize -Value {("=""EXEC PS_STG_LINK_GENERIC_INDUSTRY '""&A$row&""' , '""&B$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' """) }
-
-# # Levels starting at Company Level
-# # ="EXEC PS_STG_CREATE_NODECOMPANY '"&C2&"','"&Params!$A$1&"','"&Params!$A$2&"','"&Params!$A$3&"','"&B2&"',"&H2&","&C$1
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL5" -Column 14 -AutoSize -Value {("=""EXEC PS_STG_CREATE_NODECOMPANY '""&C$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&B$row&""' , '""&H$row&""' , '""&C`$1&""' """) }
-# # =IF(LEN(D2)=0,"","EXEC PS_STG_CREATE_NODECOMPANY '"&D2&"','"&Params!$A$1&"','"&Params!$A$2&"','"&Params!$A$3&"','"&C2&"',"&I2&","&D$1)
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL6" -Column 15 -AutoSize -Value {("= IF(LEN(D$row)=0,"""",""EXEC PS_STG_CREATE_NODECOMPANY '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&C$row&""' , '""&I$row&""' , '""&D`$1&""' "")") }
-# # ="EXEC PS_STG_LINK_INDUSTRY_COMPANY '"&B2&"','"&C2&"','"&Params!$A$1&"','"& Params!$A$2&"','"& Params!$A$3&"','"&C2&"'"
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL7" -Column 16 -AutoSize -Value {("=""EXEC PS_STG_LINK_INDUSTRY_COMPANY '""&B$row&""' , '""&C$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&A$row&""' """) }
-# # ="EXEC PS_STG_LINK_COMPANY_COMPANY '"&C2&"','"&D2&"','"&Params!$A$1&"','"& Params!$A$2&"','"& Params!$A$3&"','"&B2&"'"
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL8" -Column 17 -AutoSize -Value {("=""EXEC PS_STG_LINK_COMPANY_COMPANY '""&C$row&""' , '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&B$row&""' """) }
-
-# # Add the data
-# # Difficulties to interpret the function text with the parameters
-# # ="EXEC PS_STG_ADD_DATAPOINT_VALUE_COMPANYL12 '"&C2&"','"&D2&"','"&Params!$A$1&"','"& Params!$A$2&"','"& Params!$A$3&"','"& Params!$A$4&"','"&TEXT(Params!$A$5,"dd-mmmm-yy")&"', "&E2
-# # Set-ExcelColumn -Worksheet $ws -Heading "SQL9" -Column 18 -AutoSize -Value {("= IF(LEN(D$row)=0,"""",""EXEC PS_STG_ADD_DATAPOINT_VALUE_COMPANYL2 '""&C$row&""' , '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&Params!`$A`$4&""' , '""&TEXT(Params!`$A`$5,""dd-mmm-yy"")&""' , '""&E$row&""' "")")}
-# # Set-ExcelColumn -Worksheet $ws -Heading "SQL9" -Column 18 -AutoSize -Value {("= IF(LEN(D$row)=0,"""",""EXEC PS_STG_ADD_DATAPOINT_VALUE_COMPANYL2 '""&C$row&""' , '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&Params!`$A`$4&""' , '""&Params!`$A`$5&""' , ""&E$row&"" "")")}
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL9" -Column 18 -AutoSize -Value {("=""EXEC PS_STG_ADD_DATAPOINT_VALUE_COMPANYL12 '""&C$row&""' , '""&D$row&""' , '""&B$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&Params!`$A`$4&""' , '""&Params!`$A`$5&""' , ""&E$row&"" """)}
-
-# No need to show // Close Package calculate and closes the spreadsheet 
-# Different from Export-Excel -ExcelPackage $excel -Calculate which requires to actually save the file
-Close-ExcelPackage $excel -Calculate
-
 "Stage 2"
 
 # Test result spreadsheet - Read it 
-$HeaderList = @('G1','I1','1','2','Amount','Sort_G1','Sort_I1','Sort_CL1','Sort_CL2','SQL1','SQL2','SQL3','SQL4','SQL5','SQL6','SQL7','SQL8','SQL9')
+$HeaderList = @('G1','I1','1','2','Amount','Sort_G1','Sort_I1','Sort_CL1','Sort_CL2','SQL1','SQL2','SQL3','SQL4','SQL5','SQL6','SQL7','SQL8')
 $HeaderList
 $data = Import-Excel $Result -WorksheetName Data -HeaderName $HeaderList
 $data
@@ -243,13 +202,6 @@ if ($Scope -ne "DataPointOnly") {
     Execute-SQLColumn -data $data -SQLQuery "SQL6"
     Execute-SQLColumn -data $data -SQLQuery "SQL7"
     Execute-SQLColumn -data $data -SQLQuery "SQL8"
-}
-
-"Stage 3 - No upload of values"
-
-# Execute SQL for the actual DataPoint
-if ($Scope -ne "StructureOnly") {
-    Execute-SQLColumn -data $data -SQLQuery "SQL9"
 }
 
 # --------------------------------------------------------------------

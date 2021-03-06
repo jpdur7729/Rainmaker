@@ -23,7 +23,7 @@ GO
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 -- Step 2 // Creates the view accordingly
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-create view HierarchyList
+create or alter VIEW HierarchyList
 as
 	Select Id as ID, Name as Name from RMX_KpiType 
 

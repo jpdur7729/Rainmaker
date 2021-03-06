@@ -23,9 +23,12 @@ GO
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 -- Step 2 // Creates the view accordingly
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-create or alter view CompanyList
+-- Only Companies where RM_IsActive = 1 are to be taken into account 
+create or alter VIEW CompanyList
 as 
-	Select Id as ID, InvCompanyName as Name,InvIndustry as IndustryID from RM_Company
+	Select Id as ID, InvCompanyName as Name,InvIndustry as IndustryID
+	       from RM_Company
+	       where RM_IsActive = 1
 GO
 
 -- Verification that the 2 reference tables are linked
