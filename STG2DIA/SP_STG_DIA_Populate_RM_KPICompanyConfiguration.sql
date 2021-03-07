@@ -20,7 +20,7 @@ BEGIN
       merge into RM_KPICompanyConfiguration RM_KCompConf
       using (
       select @KPIIndustryTemplateID as KPIIndustryTemplateID,@CompanyID as CompanyID,
-      	     (select ID from RMX_CollectionRecurrence where Name= 'Monthly') as CollectionRecurrenceID
+      	     (select ID from RMX_CollectionRecurrence where Name= 'End after X periods') as CollectionRecurrenceID
 	  ) x
       on
       x.KPIIndustryTemplateID = RM_KCompConf.KPIIndustryTemplateID and x.CompanyID = RM_KCompConf.CompanyID

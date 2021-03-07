@@ -44,7 +44,7 @@ BEGIN
       merge into RM_DataItem RM_DI
       using (
       	    select distinct Name,@IndustryID as IndustryID,@HierarchyID as KPITypeID,@IsDebit as IsDebit,@IsAggregate as IsAggregate,@Scale as Scale,
-	    (select ID from RMX_ValueType where Name = 'Default') as ValueTypeID
+	    (select ID from RMX_ValueType where Name = 'Numeric') as ValueTypeID
 	    from #FinalLeaves 
       ) x
       on x.Name = RM_DI.Name and x.IndustryID = RM_DI.IndustryID and x.KPITypeId = RM_DI.KPITypeID

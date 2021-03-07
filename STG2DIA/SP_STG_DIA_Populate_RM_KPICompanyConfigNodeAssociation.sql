@@ -3,6 +3,10 @@
 --                     Time-stamp: "2021-02-28 10:34:47 jpdur"
 -- ------------------------------------------------------------------------------
 
+-- 2021-03-07 JPD - Potentially a quicker approach as it seems that this is purely a copy
+-- 	      	    of RM_Node from KPITypeID = @HierarchyID
+-- 		    Just relevant because of 
+
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPICompanyConfigNodeAssociation] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
 as
 BEGIN
@@ -27,7 +31,7 @@ BEGIN
       -- Step 1: Ckeck that the specific Level1 Nodes are associated
       merge into RM_KPICompanyConfigNodeAssociation RM_KCCNA
       using (
-		    -- coalesce just in order to sort some initialisation setup issue
+	    -- coalesce just in order to sort some initialisation setup issue
       	    select ID as RMNodeID, coalesce(Sequence,1) as Sequence,1 as Weight, @HierarchyID as KPITypeID
  	    from RM_Node
 	    where ParentNodeId is null and KPITypeID = @HierarchyID
