@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-04 16:20:31 jpdur"
+#                     Time-stamp: "2021-03-09 13:55:48 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -86,10 +86,12 @@ function Execute-SQLColumn($data,$SQLQuery){
 
 # Use only # as separators
 $str = $Source.replace('_','#').replace(' ','#')
+"string str is"
 $str
 
 # Pattern to read the file name
 $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Output>\w+)#(?<Number1>\w+)#(?<FIS>\w+)#(?<Company>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
+# $firstLastPattern
 
 $str |
   Select-String -Pattern $firstLastPattern |
@@ -107,6 +109,18 @@ $str |
           Extension = $extension
       }
   }
+# "Before Company"
+# $Company
+# "After Company"
+# $Source
+
+# In order to be able to have a Company Name with space they are entered as @
+# Let's reestablish the right elements
+$Company = $Company.replace('Z',' ')
+$Source = $Source.replace('Z',' ')
+
+$Company
+$Source
 
 # ----------------------------------------------------------------------
 # Normalise the values in the fields in order to get the standard values 

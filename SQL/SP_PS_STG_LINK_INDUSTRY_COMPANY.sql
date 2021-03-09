@@ -3,6 +3,8 @@
 --                     Time-stamp: "2021-02-26 17:08:46 jpdur"
 -- ------------------------------------------------------------------------------
 
+-- use [RainmakerLDCJP_OATSTG]
+
 CREATE or ALTER PROCEDURE [dbo].[PS_STG_LINK_INDUSTRY_COMPANY](
        @TopLevelName as varchar(100),@BottomLevelName as varchar(100),
        @HierarchyName as varchar(100),@IndustryName as varchar(100),@CompanyName as varchar(100),
@@ -16,7 +18,8 @@ declare @CompanyID as nvarchar(36)
 
 set @HierarchyID = (select ID from HierarchyList where Name = @HierarchyName )
 set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
-set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+-- set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
 
 merge into Hierarchies using (
       select

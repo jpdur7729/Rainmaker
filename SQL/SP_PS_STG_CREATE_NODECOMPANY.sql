@@ -3,6 +3,8 @@
 --                     Time-stamp: "2021-02-27 15:04:45 jpdur"
 -- ------------------------------------------------------------------------------
 
+-- use [RainmakerLDCJP_OATSTG]
+
 -- ---------------------------------------------------------
 -- Create node at the Company level "SubCategory2 or 3" 
 -- ---------------------------------------------------------
@@ -19,7 +21,8 @@ declare @CompanyID as nvarchar(36)
 
 set @HierarchyID = (select ID from HierarchyList where Name = @HierarchyName )
 set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
-set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+-- set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
 
 merge into NodeDefCompany using (
       select @LevelName as Name, @IndustryID as IndustryID, @HierarchyID as HierarchyID, @CompanyID as CompanyID,@ParentLevelName as ParentLevelName

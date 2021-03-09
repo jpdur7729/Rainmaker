@@ -16,7 +16,8 @@ BEGIN
 
       set @HierarchyID = (select ID from HierarchyList where Name = @HierarchyName )
       set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
-      set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+      -- set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+      set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
 
       -- Identify the NodeID we want to associate to a give DataPoint
       declare @NodeID as varchar(36)

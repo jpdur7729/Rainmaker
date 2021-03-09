@@ -185,7 +185,8 @@ declare @CompanyID as nvarchar(36)
 
 set @HierarchyID = (select ID from HierarchyList where Name = @HierarchyName )
 set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
-set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+-- set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
 
 -- Debug Check IDs have been captured
 select @IndustryName,@IndustryID,@HierarchyName,@HierarchyID,@CompanyName,@CompanyID 
@@ -242,7 +243,8 @@ declare @CompanyID as nvarchar(36)
 
 set @HierarchyID = (select ID from HierarchyList where Name = @HierarchyName )
 set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
-set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+-- set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
 
 -- Debug Check IDs have been captured
 select @IndustryName,@IndustryID,@HierarchyName,@HierarchyID,@CompanyName,@CompanyID 

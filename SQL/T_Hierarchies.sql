@@ -3,6 +3,8 @@
 --                     Time-stamp: "2021-02-26 17:09:16 jpdur"
 -- ------------------------------------------------------------------------------
 
+-- use [RainmakerLDCJP_OATSTG]
+
 -- Hierarchies based on Nodes
 if exists (select * from dbo.sysobjects where id = object_id(N'Hierarchies') and OBJECTPROPERTY(id, N'IsTable') = 1)
 drop table Hierarchies

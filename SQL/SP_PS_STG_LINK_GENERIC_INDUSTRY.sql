@@ -3,6 +3,8 @@
 --                     Time-stamp: "2021-02-26 17:08:28 jpdur"
 -- ------------------------------------------------------------------------------
 
+-- use [RainmakerLDCJP_OATSTG]
+
 CREATE or ALTER PROCEDURE [dbo].[PS_STG_LINK_GENERIC_INDUSTRY](
        @TopLevelName as varchar(100),@BottomLevelName as varchar(100),
        @HierarchyName as varchar(100),@IndustryName as varchar(100)

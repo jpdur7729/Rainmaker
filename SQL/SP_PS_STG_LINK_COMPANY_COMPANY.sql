@@ -3,6 +3,8 @@
 --                     Time-stamp: "2021-02-26 17:08:18 jpdur"
 -- ------------------------------------------------------------------------------
 
+-- use [RainmakerLDCJP_OATSTG]
+
 -- Create link between Company level 1 and Company level 2
 CREATE or ALTER PROCEDURE [dbo].[PS_STG_LINK_COMPANY_COMPANY](
        @TopLevelName as varchar(100),@BottomLevelName as varchar(100),
@@ -19,7 +21,8 @@ if @BottomLevelName is not null and len(@BottomLevelName) <> 0 begin
 
       set @HierarchyID = (select ID from HierarchyList where Name = @HierarchyName )
       set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
-      set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+      -- set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+      set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
 
       merge into Hierarchies using (
       	    select

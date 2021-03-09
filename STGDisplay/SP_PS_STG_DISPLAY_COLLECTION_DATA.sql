@@ -18,7 +18,8 @@ declare @CompanyID as nvarchar(36)
 
 set @HierarchyID = (select ID from HierarchyList where Name = @HierarchyName )
 set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
-set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+-- set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
 
 select Hierarchy,Level1,IndustryLevel,CompanyLevel1,coalesce(CompanyLevel2,'') as CompanyLevel2,coalesce(AmountL2,AmountL1) as Amount
      ,SOL1,SOL2,SOL3,SortOrderCL2

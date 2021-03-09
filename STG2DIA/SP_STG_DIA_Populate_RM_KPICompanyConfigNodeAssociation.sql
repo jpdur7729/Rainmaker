@@ -5,7 +5,7 @@
 
 -- 2021-03-07 JPD - Potentially a quicker approach as it seems that this is purely a copy
 -- 	      	    of RM_Node from KPITypeID = @HierarchyID
--- 		    Just relevant because of 
+-- 		    Just relevant because of the actual structure of RM_Node
 
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPICompanyConfigNodeAssociation] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
 as
