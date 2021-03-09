@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-09 13:55:48 jpdur"
+#                     Time-stamp: "2021-03-09 17:43:15 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -85,13 +85,18 @@ function Execute-SQLColumn($data,$SQLQuery){
 #   }
 
 # Use only # as separators
-$str = $Source.replace('_','#').replace(' ','#')
-"string str is"
-$str
+# -----------------------------------------------------------------------
+# There is a space at the end of the string to be replaced by a #
+# The name of the company may have a space so we modfy only the Last one 
+# -----------------------------------------------------------------------
+$pos = $Source.LastIndexOf(' ')
+$str2 = -join($Source.substring(0,$pos), "#", $Source.substring($pos+1))
+# The other possible space  - in the name of the company - are replaced by XYZ
+$str = $str2.replace('_','#').replace(' ','XYZ')
 
 # Pattern to read the file name
 $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Output>\w+)#(?<Number1>\w+)#(?<FIS>\w+)#(?<Company>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
-# $firstLastPattern
+$firstLastPattern
 
 $str |
   Select-String -Pattern $firstLastPattern |
@@ -100,7 +105,7 @@ $str |
       $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
       [PSCustomObject] @{
           Hierarchy = $Hierarchy
-          Company  = $Company
+          Company  = $Company.replace('XYZ',' ')
 	  # Number1 = $Number1
 	  # FIS = $FIS
           Scenario = $Scenario
@@ -109,15 +114,10 @@ $str |
           Extension = $extension
       }
   }
-# "Before Company"
-# $Company
-# "After Company"
-# $Source
 
-# In order to be able to have a Company Name with space they are entered as @
+# In order to be able to have a Company Name with space they are entered as XYZ
 # Let's reestablish the right elements
-$Company = $Company.replace('Z',' ')
-$Source = $Source.replace('Z',' ')
+$Company = $Company.replace('XYZ',' ')
 
 $Company
 $Source
