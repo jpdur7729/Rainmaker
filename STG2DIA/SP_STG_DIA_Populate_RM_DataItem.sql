@@ -18,7 +18,8 @@ BEGIN
 
       declare @CompanyID as nvarchar(36)
       declare @KPICompanyConfigurationID as nvarchar(36)
-      set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+      -- set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
+      set @CompanyID   = (select ID from CompanyList where Name = @CompanyName)
       set @KPICompanyConfigurationID = (select ID from RM_KPICompanyConfiguration where CompanyID = @CompanyID )
 
       -- Create the defualt value for RM_DataItem

@@ -26,6 +26,8 @@ EXEC STG_DIA_RM_KPIIndustryTemplate @IndustryName
 EXEC STG_DIA_RM_NodeIndustryAssociation @IndustryName
 
 -- 4) RM_KPICompanyConfiguration
+-- More about the Cpature of Financial Data and the Recurrence characteristics
+-- Part of deployment structure ??? Not really
 EXEC STG_DIA_RM_KPICompanyConfiguration @IndustryName,@CompanyName
 
 -- 5) RM_KPICompanyConfigNodeAssociation

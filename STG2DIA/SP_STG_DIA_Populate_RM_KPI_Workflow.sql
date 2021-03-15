@@ -3,8 +3,9 @@
 --                     Time-stamp: "2021-03-01 14:50:15 jpdur"
 -- ------------------------------------------------------------------------------
 
+-- @StartCollectionDate 
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_Workflow] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100),
-@CollectionDate as date,@ScenarioName as varchar(100))
+@StartCollectionDate as date,@ScenarioName as varchar(100))
 as
 BEGIN
 
@@ -47,7 +48,7 @@ BEGIN
       -- Merge into the Table
       merge into RM_Workflow as RW
       using (
-      	    select @KPICategoryID as KPICategoryID, @CollectionDate as EffectiveDate,
+      	    select @KPICategoryID as KPICategoryID, @StartCollectionDate as EffectiveDate,
 	    	   @WorkflowStatusID  as WorkflowStatusID , @CompanyID as CompanyID
       ) x
       on x.KPICategoryID = RW.KPICategoryID and x.CompanyID = RW.CompanyID
