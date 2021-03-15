@@ -27,5 +27,31 @@ select * from RM_KPI_Collection_Batch where
 -- -- -- -- -- -- -- 
 -- KPI Collection_Batch_Dimension == Where the values are stored link between KPI Collect Batch -- KPI Collection Dimension
 
+-- STEP A -- Collection Node 
+-- Add the nodes in the RM_Node table and prepare a subtree of nodes to be populated for Calico
+-- Andean vs. Calico for Collection Node
+select * from RM_KPI_Collection_Node where workflowID in (select ID from RM_Workflow where CompanyID in (select ID from RM_Company where InvCompanyName = 'Andean Luxury Fabrics'))
+-- Currently Identical
+select * from RM_KPI_Collection_Node where workflowID in (select ID from RM_Workflow where CompanyID in (select ID from RM_Company where InvCompanyName = 'Calico Marketing'))
+
+-- STEP B -- Collection DataItem
+-- Add the nodes in the RM_Node table and prepare a subtree of nodes to be populated for Calico
+select * from RM_KPI_Collection_DataItem where KPICollectionNodeID in (
+select ID from RM_KPI_Collection_Node where workflowID in (select ID from RM_Workflow where CompanyID in (select ID from RM_Company where InvCompanyName = 'Calico Marketing')))
+
+select * from RM_KPI_Collection_DataItem where KPICollectionNodeID in (
+select ID from RM_KPI_Collection_Node where workflowID in (select ID from RM_Workflow where CompanyID in (select ID from RM_Company where InvCompanyName = 'Andean Luxury Fabrics')))
+
+-- STEP C -- Collection Dimension
+-- Add the nodes in the RM_Node table and prepare a subtree of nodes to be populated for Calico
+select * from RM_KPI_Collection_Dimension where KPICollectionDataItemID in (
+select ID from RM_KPI_Collection_DataItem where KPICollectionNodeID in (
+select ID from RM_KPI_Collection_Node where workflowID in (select ID from RM_Workflow where CompanyID in (select ID from RM_Company where InvCompanyName = 'Calico Marketing'))))
+
+select * from RM_KPI_Collection_Dimension where KPICollectionDataItemID in (
+select ID from RM_KPI_Collection_DataItem where KPICollectionNodeID in (
+select ID from RM_KPI_Collection_Node where workflowID in (select ID from RM_Workflow where CompanyID in (select ID from RM_Company where InvCompanyName = 'Andean Luxury Fabrics'))))
+
+
 
 
