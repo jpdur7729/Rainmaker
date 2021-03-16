@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-09 17:43:15 jpdur"
+#                     Time-stamp: "2021-03-16 15:24:08 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -11,6 +11,7 @@ param(
     [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
     [Parameter(Mandatory=$false)] [ValidateSet("runSQL","GenerateSQLScript")] [string] $Action = "runSQL",
     [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly","DataPointOnly","All")] [string] $Scope = "StructureOnly",
+    [Parameter(Mandatory=$false)] [ValidateSet("Top","Industry","Company")] [string] $HierarchyLevel = "Company",
     [Parameter(Mandatory=$false)] [string] $Script = "Results.sql"
 )
 
@@ -40,12 +41,23 @@ function Execute-SQLColumn($data,$SQLQuery){
     # Loop for all elements of the column whose header has been provided
     # select -skip 1 is to just skip the 1st element which is the header 
     $data | select -skip 1 | ForEach-Object {
-	$_."$SQLQuery"
+	$_."$SQLQuery",$SQLQuery,$HierarchyLevel
 	if ($_."$SQLQuery".length -ne 0) {
 	    if ($Action -eq "runSQL") {
 		$data_query1 = Invoke-DbaQuery -SqlInstance $DatabaseInstance -Database $Database -Query $_."$SQLQuery"
 	    }
-	    $SQLQuery + $_."$SQLQuery" | Out-File -Encoding ASCII -Append $TempFile
+	    # Only generates the top level request
+	    If ( ($HierarchyLevel -eq "Top") -and ($SQLQuery -eq "SQL1") ) {
+		$SQLQuery + $_."$SQLQuery" | Out-File -Encoding ASCII -Append $TempFile
+	    }
+	    If ( ($HierarchyLevel -eq "Industry") -and
+		 (($SQLQuery -eq "SQL1") -or ($SQLQuery -eq "SQL2") -or ($SQLQuery -eq "SQL3") -or ($SQLQuery -eq "SQL4"))) {
+		$SQLQuery + $_."$SQLQuery" | Out-File -Encoding ASCII -Append $TempFile
+	    }
+	    if ($HierarchyLevel -eq "Company") {
+		    # We genertae by default for all Levels
+		    $SQLQuery + $_."$SQLQuery" | Out-File -Encoding ASCII -Append $TempFile
+	    }
 	}
 	# Display results if required 
 	# $data_query1.ID
@@ -145,6 +157,7 @@ $Industry = $data_query1.Name
 switch($Hierarchy)
 {
     'PL' {$Hierarchy = "Income Statement"}
+    'CF' {$Hierarchy = "Cashflows"}
     # 'PL' {$Hierarchy = "Profit Loss"}
     'BS' {$Hierarchy = "Balance Sheet"}
 }

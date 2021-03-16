@@ -25,7 +25,7 @@ BEGIN
       declare @Description as nvarchar(50)
       set @Description = 'Created by STG_DIA_Populate_RM_DataItem_partial'
 
-      -- Create the defualt value for RM_DataItem
+      -- Create the default value for RM_DataItem
       declare @IsDebit as BIT
       set @IsDebit = 1
       declare @IsSystemDefined as BIT
@@ -37,30 +37,36 @@ BEGIN
       declare @Scale as integer
       set @Scale = 2
 
-      -- -------------------------------------------------------------------------------------------
+      -- In case RM_DataItemID has not been populated // should only be called once and on the initial envt
+      -- the definition of NodeDefCompany has been modified accordingly 
+      update NodeDefCompany set RM_DataItemID = NEWID() where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and RM_DataItemID is null
+
+	  -- -------------------------------------------------------------------------------------------
       -- Create a temporary table with all the final leaves for a given Hierarchy/Industry/Company
       -- These are all the level1 when there is no level 2 and all level 2 for the company
       -- -------------------------------------------------------------------------------------------
       select * into #FinalLeaves from (
-      	     select Name from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 2
+      	     select Name,RM_DataItemID,ID,RM_NODE_ID from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 2
       	     	    union
-      	     select Name from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 1
+      	     select Name,RM_DataItemID,ID,RM_NODE_ID from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 1
       	     and ID not in (select ParentNodeDefID from Hierarchies)
       ) as tmp
 
-      -- Create the list of Unique Names with the ID that will be used to create RM_DataItem and Dim_RM_DataItem
-      select * into #FinalLeavesUniqueID from (select top 1 NEWID() as RM_DataItemID,Name from #FinalLeaves) as tmp
-      delete from #FinalLeavesUniqueID
+	  select * from #FinalLeaves
 
-      -- Populate the structure with all the distinct Names 
-      merge into #FinalLeavesUniqueID Target
-      using (
-	  select distinct Name from #FinalLeaves
-      ) x
-	  on x.Name = Target.Name 
-	  when not matched then 
-	       insert VALUES (NEWID(),x.name) ;
+       -- Create the list of Unique Names with the ID that will be used to create RM_DataItem and Dim_RM_DataItem
+       select * into #FinalLeavesUniqueID from (select top 1 NEWID() as RM_DataItemID,Name from #FinalLeaves) as tmp
+       delete from #FinalLeavesUniqueID
 
+       -- Populate the structure with all the distinct Names 
+       merge into #FinalLeavesUniqueID Target
+       using (
+       	  select distinct Name from #FinalLeaves
+       ) x
+       	  on x.Name = Target.Name 
+       	  when not matched then 
+       	       insert VALUES (NEWID(),x.name) ;
+      
       -- The key criteria in that table is the unicity of the name so
       merge into RainmakerLDCJP_OAT.dbo.RM_DataItem RM_DI
       using (
@@ -68,9 +74,9 @@ BEGIN
 	    	   @IndustryID as IndustryID,@HierarchyID as KPITypeID,@IsDebit as IsDebit,@IsAggregate as IsAggregate,@Scale as Scale,
 		   @Description as Description,
 	    	   (select ID from RainmakerLDCJP_OAT.dbo.RMX_ValueType where Name = 'Numeric') as ValueTypeID
-	    from #FinalLeavesUniqueID 
+	    from #FinalLeaves
       ) x
-      on x.Name = RM_DI.Name and x.IndustryID = RM_DI.IndustryID and x.KPITypeId = RM_DI.KPITypeID
+      on x.RM_DataItemID = RM_DI.ID
       WHEN NOT MATCHED then
       	   INSERT (ID,IndustryID,KPITypeID,IsDebit,IsAggregate,Scale,ValueTypeID,Name,Description,createdOn,IsActive)
 	   VALUES (x.RM_DataItemID,x.IndustryID,x.KPITypeID,x.IsDebit,x.IsAggregate,x.Scale,x.ValueTypeID,x.Name,x.Description,getdate(),@IsActive) ;

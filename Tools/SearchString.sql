@@ -5,7 +5,9 @@
 use [RainmakerLDCJP_OAT]
 
 -- DECLARE @SearchStr nvarchar(100) = 'B2FAABE8-48B9-4FD2-8415-18F14E926374' -- Collection_Dimension
-DECLARE @SearchStr nvarchar(100) = 'C29FD9BE-E23D-4791-2AC8-08D8E53217E2'
+-- DECLARE @SearchStr nvarchar(100) = '93C3AA5A-A522-EB11-8187-005056AB4D1B' -- De La Renta Enterprises Company ID 
+-- DECLARE @SearchStr nvarchar(100) = '401FAAB8-5BBF-43C9-2794-08D8E7A5CE48' -- De La Renta Enterprises KPI Configuration ID 
+DECLARE @SearchStr nvarchar(100) = 'A2E695A0-15B8-498F-ABDD-1DAC38CF98D6' -- Calico Marketing KPI Configuration ID 
 
 DECLARE @Results TABLE (ColumnName nvarchar(370), ColumnValue nvarchar(3630))
 

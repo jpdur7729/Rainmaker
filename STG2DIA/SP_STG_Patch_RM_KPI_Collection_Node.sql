@@ -78,7 +78,7 @@ BEGIN
      -- select * from #InterTable
 
      -- Insert into the Collection_Node table
-     -- INSERT INTO RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Node
+     INSERT INTO RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Node
      select NewID,WorkflowID,NodeID,NewParentKPICollectionNodeID,KPITypeID,Sequence 
 	 from #InterTable
 
@@ -94,11 +94,12 @@ BEGIN
      	   select ID,NewID from #InterTable
      ) x
      on x.ID = target.KPICollectionNodeID
-     update set NewKPICollectionNodeID = x.NewID,
+	 when matched then
+     update set NewKPICollectionNodeID = x.NewID;
 
      -- Add the data into the table 
-     -- insert into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_DataItem
-     select NewID,NewKPICollectionNodeID,DataItem,Sequence from #InterTableDataItem
+     insert into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_DataItem
+     select NewID,NewKPICollectionNodeID,DataItemId,Sequence from #InterTableDataItem
 
      -- Next Step patch the data into KPI_Collection_DataItem
      -- 1st extract the data that will be used
@@ -115,10 +116,11 @@ BEGIN
      	   select ID,NewID from #InterTableDataItem
      ) x
      on x.ID = target.KPICollectionDataItemID
-     update set NewKPICollectionDataItemID = x.NewID,
+	 when matched then 
+     update set NewKPICollectionDataItemID = x.NewID;
 
      -- Insert into the Collection_Dimension 
-     -- insert into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Dimension
+     insert into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Dimension
      select NewID,NewKPICollectionDataItemID,AttributeID,ParentKPICollectionDimensionID,Sequence from #InterTableDimension
      
      
