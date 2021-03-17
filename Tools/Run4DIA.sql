@@ -105,11 +105,43 @@ where KPICompanyConfigurationId = 'A2E695A0-15B8-498F-ABDD-1DAC38CF98D6'
 and KPITypeID in (select ID from RMX_KpiType where Name = 'Income Statement')
 
 -- select * from RM_Node where ParentNOdeID is null and KPITypeID in (select ID from RMX_KPIType where Name = 'Cashflows')
+-- select * from RM_NODE where Name = 'CASH POSITION BALANCE - BEGINNING'
+select * from RM_NODE where ParentNodeID is null and IsSystemDefined = 0
+update RM_NODE set IsSystemDefined =  1 where ParentNodeID is null and IsSystemDefined = 0
+update RM_NODE set IsSystemDefined =  0 where ID in (
+select RM_NODE_ID from RainmakerLDCJP_OATSTG.dbo.NodeDef where HierarchyID in (select ID from RainmakerLDCJP_OATSTG.dbo.HierarchyList where Name = 'Cashflows')
+)
+
+select * from RM_NODE where ParentNodeID is null and IsSystemDefined = 0
+
+select * from RMX_KPIType where ID = '192CEC9C-780A-4E82-AA50-FA07EACEB306'
+select * from RM_NODE where Name = 'FINANCIALS'
+select * from RM_NODE where Name = 'CASH POSITION BALANCE - BEGINNING'
+select * from RM_Node where ID = 'CEA3FBD9-D9DB-4213-B270-DFFFECBC63B4'
+select * from RM_Node where ParentNodeID = 'CEA3FBD9-D9DB-4213-B270-DFFFECBC63B4'
+select * from RM_Node where ParentNodeID = '34FF9C3C-6DA7-4C63-A581-5171E7DC69BE'
+
+select * from RM_NodeIndustryAssociation where NodeId = 'CBA3FCCE-DD23-4751-AAA6-2E55C1AA1A7A'
+
+select * from RM_KPIIndustryTemplate where ID in (
+select KPIIndustryTemplateID from RM_NodeIndustryAssociation where NodeId = 'CBA3FCCE-DD23-4751-AAA6-2E55C1AA1A7A')
+
+select * from RM_NodeIndustryAssociation where NodeID in (select RM_NODE_ID from Node where Hierarchy in (select ID from RMX_KpiType where Name = 'Cashflows') )
 
 
+select * from RM_NodeIndustryAssociation where NodeID = 'CBA3FCCE-DD23-4751-AAA6-2E55C1AA1A7A'
+select * from RM_KPI_Collection_Node where NodeID = 'CBA3FCCE-DD23-4751-AAA6-2E55C1AA1A7A'
 
-   
+-- In order to extract from NodeIndustryAssociation for a Given Industry and KPI/Hierarchy
+select * from RM_NodeIndustryAssociation where KPIIndustryTemplateID  in (select ID from RainmakerLDCJP_OAT.dbo.RM_KPIIndustryTemplate where IndustryID in (select ID from RM_Industry where InvIndustryName = 'Textile Product Mills (314)') )
+and NodeId in (select ID from RM_Node where KPITypeID in (select ID from RMX_KpiType where name = 'Cashflows'))
+select ~ IsChecked as NewChecked,* from RM_NodeIndustryAssociation where KPIIndustryTemplateID  in (select ID from RainmakerLDCJP_OAT.dbo.RM_KPIIndustryTemplate where IndustryID in (select ID from RM_Industry where InvIndustryName = 'Textile Product Mills (314)') )
+and NodeId in (select ID from RM_Node where KPITypeID in (select ID from RMX_KpiType where name = 'Cashflows'))
 
-
+-- Enough for all the Nodes as displayed on Industry Templates --> Does not affect the Data Item (corrected manually) 
+Update RM_NodeIndustryAssociation set IsChecked = ~ IsChecked where ID in (
+select ID from RM_NodeIndustryAssociation where KPIIndustryTemplateID  in (select ID from RainmakerLDCJP_OAT.dbo.RM_KPIIndustryTemplate where IndustryID in (select ID from RM_Industry where InvIndustryName = 'Textile Product Mills (314)') )
+and NodeId in (select ID from RM_Node where KPITypeID in (select ID from RMX_KpiType where name = 'Cashflows'))
+)
 
 
