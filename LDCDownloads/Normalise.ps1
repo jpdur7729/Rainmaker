@@ -1,18 +1,19 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-16 15:24:08 jpdur"
+#                     Time-stamp: "2021-03-21 09:17:38 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
     [Parameter(Mandatory=$false)] [string] $Exec_Dir = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition),
-    [Parameter(Mandatory=$false)] [string] $Source = "6_Output_1_FIS_TestCo_2020_10_PL_AC_20210108 2203.xlsx",
+    [Parameter(Mandatory=$false)] [string] $Source = "002_004_PL_AC_2020_07_FIS_Data_Encoded_20210315_170913.xlsx",
     [Parameter(Mandatory=$false)] [string] $Result = "Results.xlsx",
     [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
     [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
     [Parameter(Mandatory=$false)] [ValidateSet("runSQL","GenerateSQLScript")] [string] $Action = "runSQL",
     [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly","DataPointOnly","All")] [string] $Scope = "StructureOnly",
     [Parameter(Mandatory=$false)] [ValidateSet("Top","Industry","Company")] [string] $HierarchyLevel = "Company",
-    [Parameter(Mandatory=$false)] [string] $Script = "Results.sql"
+    [Parameter(Mandatory=$false)] [string] $Script = "Results.sql",
+    [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 pf
 )
 
 # Execution is done from the directory of the script ==> relative paths are thus possible
@@ -97,24 +98,21 @@ function Execute-SQLColumn($data,$SQLQuery){
 #   }
 
 # Use only # as separators
-# -----------------------------------------------------------------------
-# There is a space at the end of the string to be replaced by a #
-# The name of the company may have a space so we modfy only the Last one 
-# -----------------------------------------------------------------------
-$pos = $Source.LastIndexOf(' ')
-$str2 = -join($Source.substring(0,$pos), "#", $Source.substring($pos+1))
-# The other possible space  - in the name of the company - are replaced by XYZ
-$str = $str2.replace('_','#').replace(' ','XYZ')
+# Any other possible space  - in the name of the company - are replaced by XYZ
+$str = $Source.replace('_','#').replace(' ','XYZ')
 
 # Pattern to read the file name
-$firstLastPattern = "^(?<BatchNumber>\w+)#(?<Output>\w+)#(?<Number1>\w+)#(?<FIS>\w+)#(?<Company>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
+# $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Output>\w+)#(?<Number1>\w+)#(?<FIS>\w+)#(?<Company>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
+$firstLastPattern = "^(?<BatchNumber>\w+)#(?<Company>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<FIS>\w+)#(?<DataStr>\w+)#(?<Encoded>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
 $firstLastPattern
 
 $str |
   Select-String -Pattern $firstLastPattern |
   Foreach-Object {
       # here we access the groups by name instead of by index
-      $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
+      # $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
+      # 002_004_PL_AC_2020_07_FIS_Data_Encoded_20210315_170913.xlsx
+      $BatchNumber, $Company, $Hierarchy, $Scenario, $Year, $Month, $FIS, $DataStr, $Encoded, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Company', 'Hierarchy', 'Scenario', 'Year', 'Month', 'FIS', 'DataStr', 'Encoded', 'CreationDate', 'UnknownNumber', 'extension'].Value
       [PSCustomObject] @{
           Hierarchy = $Hierarchy
           Company  = $Company.replace('XYZ',' ')
@@ -129,10 +127,10 @@ $str |
 
 # In order to be able to have a Company Name with space they are entered as XYZ
 # Let's reestablish the right elements
+# If the company starts could be understood as a number 004 the user may add a Prefix 
+# quick fix to the 004 situation on 2021-03-21 
 $Company = $Company.replace('XYZ',' ')
-
-$Company
-$Source
+$Company = $Prefix + $Company
 
 # ----------------------------------------------------------------------
 # Normalise the values in the fields in order to get the standard values 

@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-27 09:09:07 jpdur"
+--                     Time-stamp: "2021-03-21 11:25:18 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- Add the NodeDefIndustry in RM_NodeIndustryAssociation
@@ -25,6 +25,10 @@ BEGIN
       declare @IsChecked as BIT
       set @IsChecked = 1
 
+      -- -----------------------------------------------------------------------------------------------------------
+      -- By default we recheck all the nodes from the hierarchy ==> Should be the desired objective most of the time
+      -- -----------------------------------------------------------------------------------------------------------
+
        -- We add the nodes from RM_Node associated to the Industry
        merge into RainmakerLDCJP_OAT.dbo.RM_NodeIndustryAssociation RM_NIA
        using (
@@ -34,12 +38,12 @@ BEGIN
        			   where IndustryId = @IndustryID  and HierarchyID = @HierarchyID
        	  ) x
        on
-       x.NodeID = RM_NIA.NodeId
+       x.NodeID = RM_NIA.NodeId and x.KPIIndustryTemplateID = RM_NIA.KPIIndustryTemplateID
        when NOT MATCHED THEN
            INSERT (NodeId,KPIIndustryTemplateId,NodeAlias,Weight,Sequence,IsChecked)
        	  VALUES(x.NodeID,x.KPIIndustryTemplateId,x.NodeAlias,x.Weight,x.Sequence,@IsChecked)
-       -- when matched then
-       -- 	    update set IsChecked = @IsChecked
+       when matched then
+	    update set IsChecked = @IsChecked
 	;
 
 END

@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-27 15:28:45 jpdur"
+--                     Time-stamp: "2021-03-21 11:57:41 jpdur"
 -- ------------------------------------------------------------------------------
 
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_NODE_Industry] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) )
@@ -25,17 +25,21 @@ BEGIN
       -- INSERT INTO RM_NODE (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined)
        merge into RainmakerLDCJP_OAT.dbo.RM_NODE RM_NODE
        using (
-      	    Select NI.RM_NODE_ID as RMNodeID, NI.Name as Name,RM_NODE.ID as ParentNodeID,@HierarchyID as KPITypeID
+      	    Select NI.RM_NODE_ID as RMNodeID, NI.Name as Name,RM_NODE.ID as ParentNodeID,@HierarchyID as KPITypeID,
+	    	   NI.SortOrder as Sequence
 	    	   from NodeDefIndustry NI,NodeDef N, Hierarchies H,RainmakerLDCJP_OAT.dbo.RM_NODE RM_NODE
 	     	   where H.NodeDefID = NI.ID and H.ParentNodeDefID = N.ID
 	     	   	 and RM_NODE.ParentNodeId is null and RM_NODE.KPITypeID = @HierarchyID and RM_NODE.Name = N.Name
 			 and NI.IndustryID = @IndustryID and NI.HierarchyID = @HierarchyID
        ) x
        on
-       x.Name = RM_NODE.Name and x.ParentNodeID = RM_NODE.ParentNodeID and x.KPITypeID = RM_NODE.KPITypeID
+       x.RMNodeID = RM_Node.ID and x.Name = RM_NODE.Name and x.ParentNodeID = RM_NODE.ParentNodeID and x.KPITypeID = RM_NODE.KPITypeID
        when NOT MATCHED THEN
-           INSERT (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined,IndustryID)
-       	  	 VALUES(x.RMNodeID,x.Name,x.ParentNodeID,x.KPITypeID,@isSystemDefined,@IndustryID) ;
+           INSERT (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined,IndustryID,Sequence)
+       	  	 VALUES(x.RMNodeID,x.Name,x.ParentNodeID,x.KPITypeID,@isSystemDefined,@IndustryID,x.Sequence)
+       when MATCHED THEN
+       	    update set Sequence = x.Sequence 
+		 ;
 
       -- -- Step 2: We add the Company Level 1 IF there is no company level 2
       -- --         Only these appear in RM_NODE

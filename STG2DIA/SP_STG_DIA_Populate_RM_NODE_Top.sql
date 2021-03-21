@@ -25,15 +25,18 @@ BEGIN
       --INSERT INTO RM_NODE (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined)
       merge into RainmakerLDCJP_OAT.dbo.RM_NODE RM_NODE
       using (
-      	    Select RM_NODE_ID as RMNodeID,Name,null as ParentNodeID,@HierarchyID as KPITypeID
+      	    Select RM_NODE_ID as RMNodeID,Name,null as ParentNodeID,@HierarchyID as KPITypeID,SortOrder as Sequence
 	    	   from NodeDef N
 	     	   where N.HierarchyID = @HierarchyID
       ) x
       on
       x.RMNodeID = RM_NODE.ID
 	  when NOT MATCHED THEN
-          INSERT (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined)
-	  	 VALUES(x.RMNodeID,x.Name,x.ParentNodeID,x.KPITypeID,@isSystemDefined) ;
+          INSERT (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined,Sequence)
+	  	 VALUES(x.RMNodeID,x.Name,x.ParentNodeID,x.KPITypeID,@isSystemDefined,x.Sequence)
+	  when MATCHED THEN
+	  update set Sequence = x.Sequence 
+	;
 
       -- -- Step 1 we add the Industry Nodes - Add only the needed nodes via MERGe 
       -- --INSERT INTO RM_NODE (ID,Name,ParentNodeID,KPITypeID,IsSystemDefined)

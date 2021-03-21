@@ -27,7 +27,7 @@ BEGIN
       set @IsCHecked = 1
 
       -- Select the Association using the data from RM_NodeIndustryAssociation, NodeDefCompany
-	  select * into #InterTable from (
+      select * into #InterTable from (
       select NEWID() as ID,NC1.Name,NC1.RM_DataItemID as DataItemID,NIA.ID as NodeIndustryAssociationID,
       	     	     	@IsChecked as IsChecked,NC1.SortOrder as Sequence,@KPIIndustryTemplateID as KPIIndustryTemplateID
       	     from NodeDefCompany NC1 ,Hierarchies h,NodeDefIndustry NI,
