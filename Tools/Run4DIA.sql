@@ -332,3 +332,45 @@ select * from RM_Company where InvCompanyName like '%004%'
 -- update RM_Company set InvCompanyName = 'X'+InvCompanyName where InvCompanyName = '004'
 select * from RM_KPIIndustryTemplate
 
+select * from RM_DataItem where Name = 'QgBhAG4AawAgAEMAaABhAHIAZwBlAHMAIABhAG4AZAAgAEkAbgB0AGUAcgBlAHMAdAAgACYAIABFAHgAYwBoAGEAbgBnAGUAIABSAGEAdABlACAAVgBhAHIAaQBhAG4AYwBlAA=='
+select * from RainmakerLDCJP_OATSTG.dbo.NodeDefIndustry where Name = 'QgBhAG4AawAgAEMAaABhAHIAZwBlAHMAIABhAG4AZAAgAEkAbgB0AGUAcgBlAHMAdAAgACYAIABFAHgAYwBoAGEAbgBnAGUAIABSAGEAdABlACAAVgBhAHIAaQBhAG4AYwBlAA==' 
+
+select * from RM_Attribute
+select * from RM_AttributeGroup
+select * from RM_AttributeGroupIndustryAssociation
+select ra.*,rag.* From RM_Attribute ra,RM_AttributeGroup rag where ra.AttributeGroupId = rag.ID
+-- select * from RM_AttributeGroupIndustryAssociation 
+
+select * from RM_DataItem where Name = 'Cash Flows - Operating - Other Operating Cash Payments'
+select * from RM_KPI_Collection_Dimension where AttributeID is not null
+select ra.*,rag.* From RM_Attribute ra,RM_AttributeGroup rag where ra.AttributeGroupId = rag.ID and ra.ID='2C050416-6366-42BD-007B-08D8C4093146'
+
+select * from RM_KPI_Collection_Batch_Dimension where KPICollectionDimensionID in (select ID from RM_KPI_Collection_Dimension where AttributeID is not null)
+select * from RM_KPI_Collection_Batch where ID = '639777E4-D2E5-41DE-B14E-08D8C40A662D'
+select * from RM_Company where ID = '49C3AA5A-A522-EB11-8187-005056AB4D1B'
+
+select * from RM_KPI_Collection_Batch_Dimension where effectiveDate = '30-Nov-2020' and Amount = 897
+select * from RM_KPI_Collection_Batch where ReportingDate = '30-Nov-2020' 
+and KPITypeID in (select ID from RMX_KpiType where Name = 'Income Statement')
+and CompanyID in (select ID from RM_Company where InvCompanyName = 'Andean Luxury Fabrics') 
+and ScenarioTypeId in (select ID from RM_ClassType where Name = 'Actuals')
+select * from RM_KPI_Collection_Dimension where ID = '5A23068B-E044-446C-93F1-2127C2025852'
+select * from RM_KPI_Collection_Dataitem where ID in (select KPICollectionDataItemID from RM_KPI_Collection_Dimension  where ID = '5A23068B-E044-446C-93F1-2127C2025852')
+
+
+select * from RM_KPI_Collection_Batch_Dimension where effectiveDate = '28-Feb-2019' and Amount = 67.54
+
+select * from RM_AttributeGroup
+select * from RM_Attribute
+
+-- Identify what exists for D004
+select * from RM_KPICompanyConfigNodeDataItemAssociation where 
+KPICompanyConfigurationID in (select ID from RM_KPICompanyConfiguration where CompanyID in (select ID from RM_Company where InvCompanyName = 'D004'))
+
+select * from RM_AttributeGroupIndustryAssociation
+-- select * from RM_DataItemAttributeGroupAssociation Useful ??
+select * from RM_KPICompanyConfigDataItemAttributeAssociation
+
+
+
+

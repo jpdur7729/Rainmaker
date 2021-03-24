@@ -5,6 +5,9 @@ select * from IndustryList where name like '%314%'
 -- Patch the tables to fire the XL-Addin
 -- EXEC STG_Patch_RM_KPI_Collection_Node 'Income Statement','Textile Product Mills (314)','Calico Marketing','01-Jul-2020','Actuals'
 
+-- Add field 
+-- ALTER TABLE NodeDefIndustry ADD RM_DataItemID   UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID();
+
 select * from NodeDef -- where TBP = 1
 select * from NodeDefIndustry where TBP = 1
 select * from NodeDefCompany where TBP = 1
@@ -380,8 +383,6 @@ ALTER TABLE NodeDefCompany ALTER COLUMN ParentLevelName VARCHAR (250);
 -- Insert the DataItem - Final Leaves - For Ecuador Clothing
 EXEC STG_DIA_Populate_RM_KPICompanyConfigNodeAssociation_Company 'Income Statement','Textile Product Mills (314)' , 'Ecuador Clothing'
 EXEC STG_DIA_Populate_RM_KPICompanyConfigNodeDataItemAssociation 'Income Statement','Textile Product Mills (314)','Ecuador Clothing'
-
-
 
 
 

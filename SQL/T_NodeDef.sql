@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-01 14:31:12 jpdur"
+--                     Time-stamp: "2021-03-21 20:40:24 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -55,6 +55,8 @@ SortOrder     integer		  NOT NULL  DEFAULT 0,
 ParentLevelName varchar(250) 	  NOT NULL,
 -- Add this ID to make it unique to idetify the parent without ambiguity
 RM_NODE_ID	UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL
+-- Add this ID to make it easy and unique to idetify the DataItem without ambiguity
+RM_DataItemID   UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL,
 )
 
 -- Add constraints so that there is only 1 value per date

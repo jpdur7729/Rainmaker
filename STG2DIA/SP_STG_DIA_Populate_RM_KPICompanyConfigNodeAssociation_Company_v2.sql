@@ -1,7 +1,7 @@
--- ------------------------------------------------------------------------------
---                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-28 10:34:47 jpdur"
--- ------------------------------------------------------------------------------
+/* ------------------------------------------------------------------------------
+                       Author    : FIS - JPD
+                       Time-stamp: "2021-03-22 08:25:50 jpdur"
+   ------------------------------------------------------------------------------ */
 
 -- 2021-03-07 JPD - Potentially a quicker approach as it seems that this is purely a copy
 -- 	      	    of RM_Node from KPITypeID = @HierarchyID
@@ -10,7 +10,12 @@
 -- 	      	    and then on a simmilar approach at the Company level
 --		    To be linked with the creation of the datapoints
 
-CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPICompanyConfigNodeAssociation_Company] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
+-- 2021-03-22 JPD   Attempt to link Nodes as NodeDef+NodeDefIndustry
+-- 	      	    DataItem as CompanyLevel1
+-- 	      	    Attribute/Dimension as CompanyLevel2
+
+
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPICompanyConfigNodeAssociation_Company_v2] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
 as
 BEGIN
 
@@ -97,29 +102,29 @@ BEGIN
 		--where H.NodeDefID = NC.ID and H.ParentNodeDefID = NI.ID
 
 
-      -- Step 3: CompanyLevel1 if not Final Leaves
-      -- -------------------------------------------------------------------
-      -- Step we add the Company Nodes i.e. Level 1 if there is a Level 2
-      -- The RM_NODE_ID is actually the ID within the RM_NODE tabe
-      -- -------------------------------------------------------------------
-      merge into RainmakerLDCJP_OAT.dbo.RM_KPICompanyConfigNodeAssociation RM_KCCNA
-      using (
-	    Select NC.RM_NODE_ID as RMNodeID, NC.SortOrder as Sequence, 1 as Weight,
-	    	   @HierarchyID as KPITypeID, @KPICompanyConfigurationID as KPICompanyConfigurationID
-	    	   		    	      from (select * from NodeDefCompany NC 
-						where NC.level = 1 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
-							and Name in (select ParentLevelName from NodeDefCompany NC 
-								where NC.level = 2 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID)) NC,
-								NodeDefIndustry NI,Hierarchies H
-		where H.NodeDefID = NC.ID and H.ParentNodeDefID = NI.ID
-      ) x
-      on
-      x.RMNodeID = RM_KCCNA.NodeID and x.KPICompanyConfigurationID = RM_KCCNA.KPICompanyConfigurationID
-      when NOT MATCHED THEN
-          INSERT (KPICompanyConfigurationID,NodeID,KPITypeID,Weight,Sequence,IsChecked)
-	  	 VALUES(x.KPICompanyConfigurationID,x.RMNodeID,x.KPITypeID,x.Weight,x.Sequence,@IsChecked)
-      when MATCHED THEN
-	   Update set IsChecked = @IsChecked,Sequence = x.Sequence;
+      -- -- Step 3: CompanyLevel1 if not Final Leaves
+      -- -- -------------------------------------------------------------------
+      -- -- Step we add the Company Nodes i.e. Level 1 if there is a Level 2
+      -- -- The RM_NODE_ID is actually the ID within the RM_NODE tabe
+      -- -- -------------------------------------------------------------------
+      -- merge into RainmakerLDCJP_OAT.dbo.RM_KPICompanyConfigNodeAssociation RM_KCCNA
+      -- using (
+      -- 	    Select NC.RM_NODE_ID as RMNodeID, NC.SortOrder as Sequence, 1 as Weight,
+      -- 	    	   @HierarchyID as KPITypeID, @KPICompanyConfigurationID as KPICompanyConfigurationID
+      -- 	    	   		    	      from (select * from NodeDefCompany NC 
+      -- 						where NC.level = 1 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
+      -- 							and Name in (select ParentLevelName from NodeDefCompany NC 
+      -- 								where NC.level = 2 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID)) NC,
+      -- 								NodeDefIndustry NI,Hierarchies H
+      -- 		where H.NodeDefID = NC.ID and H.ParentNodeDefID = NI.ID
+      -- ) x
+      -- on
+      -- x.RMNodeID = RM_KCCNA.NodeID and x.KPICompanyConfigurationID = RM_KCCNA.KPICompanyConfigurationID
+      -- when NOT MATCHED THEN
+      --     INSERT (KPICompanyConfigurationID,NodeID,KPITypeID,Weight,Sequence,IsChecked)
+      -- 	  	 VALUES(x.KPICompanyConfigurationID,x.RMNodeID,x.KPITypeID,x.Weight,x.Sequence,@IsChecked)
+      -- when MATCHED THEN
+      -- 	   Update set IsChecked = @IsChecked,Sequence = x.Sequence;
       
 
 END

@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-21 09:17:38 jpdur"
+#                     Time-stamp: "2021-03-24 14:34:07 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -13,7 +13,7 @@ param(
     [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly","DataPointOnly","All")] [string] $Scope = "StructureOnly",
     [Parameter(Mandatory=$false)] [ValidateSet("Top","Industry","Company")] [string] $HierarchyLevel = "Company",
     [Parameter(Mandatory=$false)] [string] $Script = "Results.sql",
-    [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 pf
+    [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 - not to be used/knowm
 )
 
 # Execution is done from the directory of the script ==> relative paths are thus possible
@@ -164,7 +164,7 @@ $Hierarchy
 # Normalise the Scenario
 switch($Scenario)
 {
-    'AC' {$Scenario = "Actual"}
+    'AC' {$Scenario = "Actuals"}
     'BD' {$Scenario = "Budget"}
 }
 $Scenario

@@ -1,11 +1,15 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-02-28 09:26:14 jpdur"
+                       Time-stamp: "2021-03-22 08:30:03 jpdur"
    ------------------------------------------------------------------------------ */
 
 -- 2021-03-18 JPD Similarities and differencies with DIA_Populate_RM_NodeDataItemAssociation to be highlighted 
 
-CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPICompanyConfigNodeDataItemAssociation] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
+-- 2021-03-22 JPD   Attempt to link Nodes as NodeDef+NodeDefIndustry
+-- 	      	    DataItem as CompanyLevel1
+-- 	      	    Attribute/Dimension as CompanyLevel2
+
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPICompanyConfigNodeDataItemAssociation_v2] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
 as
 BEGIN
 
@@ -54,23 +58,9 @@ BEGIN
 	     	      RainmakerLDCJP_OAT.dbo.RM_KPICompanyConfigNodeAssociation KCNA
       	     where NC1.IndustryId = @IndustryID and NC1.CompanyID = @CompanyID and NC1.HierarchyID = @HierarchyID
       	     	   and h.NodeDefID = NC1.ID and NI.ID = h.ParentNodeDefId
-		           and NC1.level = 1 and NC1.ID not in (select ParentNodeDefID from Hierarchies) -- Only Final Leaves
+		           and NC1.level = 1 
 		           and KCNA.NodeID = NI.RM_NODE_ID
 		           and KCNA.KPITypeID = @HierarchyID and KCNA.KPICompanyConfigurationID = @KPICompanyConfigurationID
-	 union 
-	 -- 2nd party of union final leaves at level 2 in NodeDefCompany 
-	 select NEWID() as ID,NC2.Name,NC2.RM_DataItemID as DataItemID,
-						NC1.Name as ParentIndustryName,NC1.RM_Node_ID as ParentNodeID,
-	                    KCNA.ID as KPICompanyConfigNodeAssociationID,
-      	     	     	@KPICompanyConfigurationID as KPICompanyConfigurationID,
-      	     	     	@IsChecked as IsChecked,NC2.SortOrder as Sequence,@KPIIndustryTemplateID as KPIIndustryTemplateID
-      	     from NodeDefCompany NC2 ,Hierarchies h,NodeDefCompany NC1,
-	     	      RainmakerLDCJP_OAT.dbo.RM_KPICompanyConfigNodeAssociation KCNA
-      	     where NC2.IndustryId = @IndustryID and NC2.CompanyID = @CompanyID and NC2.HierarchyID = @HierarchyID
-      	     	   and h.NodeDefID = NC2.ID and NC1.ID = h.ParentNodeDefId
-		           and NC2.level = 2 -- Only Final Leaves
-		           and KCNA.NodeID = NC1.RM_NODE_ID
-		           and KCNA.KPITypeID = @HierarchyID and KCNA.KPICompanyConfigurationId = @KPICompanyConfigurationID
 	  ) as tmp
 
        -- Step 4 - Finally Ready to merge into RM_KPICompanyConfigNodeDataItemAssociation

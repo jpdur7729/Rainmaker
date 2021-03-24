@@ -1,9 +1,13 @@
--- ------------------------------------------------------------------------------
---                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-01 16:01:39 jpdur"
--- ------------------------------------------------------------------------------
+/* ------------------------------------------------------------------------------
+                       Author    : FIS - JPD
+                       Time-stamp: "2021-03-21 20:57:36 jpdur"
+   ------------------------------------------------------------------------------ */
 
-CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_DataItem_partial] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
+
+-- In the case of generic functioning then this is Company Level 1 which needs to be added 
+-- No need to upload anything else ==> To be checked as part of the XL Addin
+
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_DataItem_L1] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
 as
 BEGIN
 
@@ -23,7 +27,7 @@ BEGIN
       set @KPICompanyConfigurationID = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPICompanyConfiguration where CompanyID = @CompanyID )
 
       declare @Description as nvarchar(50)
-      set @Description = 'Created by STG_DIA_Populate_RM_DataItem_partial'
+      set @Description = 'Created by STG_DIA_Populate_RM_DataItem_L1'
 
       -- Create the default value for RM_DataItem
       declare @IsDebit as BIT
@@ -39,33 +43,33 @@ BEGIN
 
       -- In case RM_DataItemID has not been populated // should only be called once and on the initial envt
       -- the definition of NodeDefCompany has been modified accordingly 
-      update NodeDefCompany set RM_DataItemID = NEWID() where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and RM_DataItemID is null
+      update NodeDefCompany set RM_DataItemID = NEWID() where level = 1 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and RM_DataItemID is null
 
-	  -- -------------------------------------------------------------------------------------------
-      -- Create a temporary table with all the final leaves for a given Hierarchy/Industry/Company
-      -- These are all the level1 when there is no level 2 and all level 2 for the company
-      -- -------------------------------------------------------------------------------------------
-      select * into #FinalLeaves from (
-      	     select Name,RM_DataItemID,ID,RM_NODE_ID from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 2
-      	     	    union
-      	     select Name,RM_DataItemID,ID,RM_NODE_ID from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 1
-      	     and ID not in (select ParentNodeDefID from Hierarchies)
-      ) as tmp
+      -- 	  -- -------------------------------------------------------------------------------------------
+      -- -- Create a temporary table with all the final leaves for a given Hierarchy/Industry/Company
+      -- -- These are all the level1 when there is no level 2 and all level 2 for the company
+      -- -- -------------------------------------------------------------------------------------------
+      -- select * into #FinalLeaves from (
+      -- 	     select Name,RM_DataItemID,ID,RM_NODE_ID,level from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 2
+      -- 	     	    union
+      -- 	     select Name,RM_DataItemID,ID,RM_NODE_ID,level from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 1
+      -- 	     and ID not in (select ParentNodeDefID from Hierarchies)
+      -- ) as tmp
 
-	  select * from #FinalLeaves
+      -- 	  select * from #FinalLeaves
 
-       -- Create the list of Unique Names with the ID that will be used to create RM_DataItem and Dim_RM_DataItem
-       select * into #FinalLeavesUniqueID from (select top 1 NEWID() as RM_DataItemID,Name from #FinalLeaves) as tmp
-       delete from #FinalLeavesUniqueID
+      --  -- Create the list of Unique Names with the ID that will be used to create RM_DataItem and Dim_RM_DataItem
+      --  select * into #FinalLeavesUniqueID from (select top 1 NEWID() as RM_DataItemID,Name from #FinalLeaves) as tmp
+      --  delete from #FinalLeavesUniqueID
 
-       -- Populate the structure with all the distinct Names 
-       merge into #FinalLeavesUniqueID Target
-       using (
-       	  select distinct Name from #FinalLeaves
-       ) x
-       	  on x.Name = Target.Name 
-       	  when not matched then 
-       	       insert VALUES (NEWID(),x.name) ;
+      --  -- Populate the structure with all the distinct Names 
+      --  merge into #FinalLeavesUniqueID Target
+      --  using (
+      --  	  select distinct Name from #FinalLeaves
+      --  ) x
+      --  	  on x.Name = Target.Name 
+      --  	  when not matched then 
+      --  	       insert VALUES (NEWID(),x.name) ;
       
       -- The key criteria in that table is the unicity of the name so
       merge into RainmakerLDCJP_OAT.dbo.RM_DataItem RM_DI
@@ -74,7 +78,8 @@ BEGIN
 	    	   @IndustryID as IndustryID,@HierarchyID as KPITypeID,@IsDebit as IsDebit,@IsAggregate as IsAggregate,@Scale as Scale,
 		   @Description as Description,
 	    	   (select ID from RainmakerLDCJP_OAT.dbo.RMX_ValueType where Name = 'Numeric') as ValueTypeID
-	    from #FinalLeaves
+	    from NodeDefCompany
+	    where level = 1 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID 
       ) x
       on x.RM_DataItemID = RM_DI.ID
       WHEN NOT MATCHED then
@@ -92,7 +97,8 @@ BEGIN
 		   -- Add the InvIndustryID and the InvIndustryName
 		   (select InvIndustryID   from RainmakerLDCJP_OAT.dbo.RM_Industry where ID = @IndustryID) as InvIndustryID,
 		   (select InvIndustryName from RainmakerLDCJP_OAT.dbo.RM_Industry where ID = @IndustryID) as InvIndustryName
-	    from #FinalLeavesUniqueID 
+	    from NodeDefCompany
+	    where level = 1 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID 
       ) x
       on x.Name = RM_DI.DataItemName and x.IndustryID = RM_DI.IndustryID and x.KPITypeId = RM_DI.KPITypeID
       WHEN NOT MATCHED then
