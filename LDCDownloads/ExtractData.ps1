@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-04-03 16:56:27 jpdur"
+#                     Time-stamp: "2021-04-04 11:17:41 jpdur"
 # ------------------------------------------------------------------------------
 
 
@@ -16,32 +16,105 @@ param(
     [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
     [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
     [Parameter(Mandatory=$false)] [string] $Script = "DataResults.sql",
+    [Parameter(Mandatory=$false)] [string] $From , # From date in yyyy-mm-dd format 
+    [Parameter(Mandatory=$false)] [string] $To = "2100-01-01",   # To  date in yyyy-mm-dd format 
     [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 - not to be used/knowm
 )
 
 # Execution is done from the directory of the script ==> relative paths are thus possible
 cd $Exec_Dir
 
+# Extract from FileName the Year/Month needed actualy all the components
+# returns an object with all the identified components of the name
+function Extract-Year-Month($FileName) {
+    
+    # Use only # as separators
+    $str = $FileName.replace('_','#').replace(' ','XYZ')
+    
+    $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Company>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<FIS>\w+)#(?<DataStr>\w+)#(?<Encoded>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
+    $str |
+      Select-String -Pattern $firstLastPattern |
+      Foreach-Object {
+	  # here we access the groups by name instead of by index
+	  # $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
+	  # 002_004_PL_AC_2020_07_FIS_Data_Encoded_20210315_170913.xlsx
+	  $BatchNumber, $Company, $Hierarchy, $Scenario, $Year, $Month, $FIS, $DataStr, $Encoded, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Company', 'Hierarchy', 'Scenario', 'Year', 'Month', 'FIS', 'DataStr', 'Encoded', 'CreationDate', 'UnknownNumber', 'extension'].Value
+	  [PSCustomObject] @{
+              Hierarchy = $Hierarchy
+              Company  = $Company.replace('XYZ',' ')
+	      # Number1 = $Number1
+	      # FIS = $FIS
+              Scenario = $Scenario
+	      Year = $Year
+	      Month = $Month
+              Extension = $extension
+	  }
+      }
+}
+
+# Return a Date which is the last day of the month received
+function LastDayofMonth($Year,$Month) {
+
+    # Process the Month and Year and convert them to integer
+    $Month = [int]$Month
+    $Year  = [int]$Year
+
+    # Determine last day of the month by going to the 1 day of following month 
+    if ($Month -eq 12) {
+	$Month = 1
+	$Year++}
+    else{
+	$Month++
+    }
+
+    # Format the Month
+    $MonthStr = "{0:00}" -f $Month
+    $DateString = "$Year-$MonthStr-01"
+
+    # Change the string to date in order to be able to later choose the right format
+    $DateasDate = [datetime]::ParseExact($DateString,"yyyy-MM-dd", $null)
+    $DateasDate = $DateasDate.addDays(-1)
+
+    # Return the calculated dates
+    return $DateasDate
+}
+
 # Pattern to extract all data
 $Pattern = "*_"+$Company+"_"+$Hierarchy+"_"+$Scenario+"_*.xlsx"
 
+# Transform the Date in order to check against the extracted date 
+if ($From -eq "") {$FromDate = $null} else { $FromDate = [datetime]::ParseExact($From,"yyyy-MM-dd", $null) }
+if ($To   -eq "") {$ToDate   = $null} else { $ToDate   = [datetime]::ParseExact($To  ,"yyyy-MM-dd", $null) }
+
 # Delete the destination file where the script will be created
-rm ($Script)
+rm ($Script) -ErrorAction SilentlyContinue
 
 # Process all files corresponding to the given pattern
 Get-ChildItem -Path $Exec_Dir -Filter $Pattern |
-Foreach-Object {
+  Foreach-Object {
 
-    # Run the standard batch
-    ./Normalise -Database DIA2 -Source $_.Name -Scope "DataPointOnly" -HierarchyLevel "Company" -Action GenerateSQLScript -Script Inter1.sql -Prefix $Prefix
+      # Extract from the file Name the period considered
+      $Data = Extract-Year-Month($_.Name)
+      $DateExtract = LastDayofMonth $Data.Year $Data.Month
 
-    # Append to the desired result file
-    $From = Get-Content -Path Inter1.sql
-    Add-Content -Path ($Script) -Value $From
+      if (($DateExtract -ge $FromDate) -and ($DateExtract -le $ToDate)) {
 
-    # Delete intermediate file
-    rm Inter1.sql
+	  # Information message
+	  Write-Host "Process for date:",$DateExtract.ToString("MMM-yyyy")
+	  
+	  # Create a temporary file to generate the SQL script
+	  $TempFile = New-TemporaryFile
+	  
+	  # Run the standard batch and redirects the output to null
+	  ./Normalise -Database DIA2 -Source $_.Name -Scope "DataPointOnly" -HierarchyLevel "Company" -Action GenerateSQLScript -Script $TempFile -Prefix $Prefix > $null
 
-}
+	  # Append to the desired result file
+	  cat ($TempFile) >> ($Script)
 
-cat ($Script)
+	  # Delete intermediate file
+	  rm ($TempFile)
+      }
+  }
+
+# Debug Display the resulting script
+# cat ($Script)
