@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-04-04 11:17:41 jpdur"
+#                     Time-stamp: "2021-04-05 07:45:37 jpdur"
 # ------------------------------------------------------------------------------
 
 
@@ -82,12 +82,45 @@ function LastDayofMonth($Year,$Month) {
 # Pattern to extract all data
 $Pattern = "*_"+$Company+"_"+$Hierarchy+"_"+$Scenario+"_*.xlsx"
 
+# Prepare the Parameters to have the actual name 
+switch($Hierarchy)
+{
+    'PL' {$HierarchyName = "Income Statement"}
+    'CF' {$HierarchyName = "Cashflows"}
+    # 'PL' {$Hierarchy = "Profit Loss"}
+    'BS' {$HierarchyName = "Balance Sheet"}
+}
+# Normalise the Scenario
+switch($Scenario)
+{
+    'AC' {$ScenarioName = "Actuals"}
+    'BD' {$ScenarioName = "Budget"} 
+}
+
+# Extract the Industry for the given company 
+$query1 = "select Name from IndustryList where ID in (select IndustryID from CompanyList where Name = '"+$Prefix+$Company+"')"
+$data_query1 = Invoke-DbaQuery -SqlInstance $DatabaseInstance -Database $Database -Query $query1
+
+# Error message or confirmation if needed
+if ($data_query1 -eq $null) {
+    "Company:" + $Company +" is not known"
+}
+else {
+    "Company " + $Company +" belongs to the industry " + $data_query1.Name
+}
+
+# Keep the industry
+$IndustryName = $data_query1.Name
+
 # Transform the Date in order to check against the extracted date 
 if ($From -eq "") {$FromDate = $null} else { $FromDate = [datetime]::ParseExact($From,"yyyy-MM-dd", $null) }
 if ($To   -eq "") {$ToDate   = $null} else { $ToDate   = [datetime]::ParseExact($To  ,"yyyy-MM-dd", $null) }
 
 # Delete the destination file where the script will be created
 rm ($Script) -ErrorAction SilentlyContinue
+
+# Delete if it exists the previous script
+rm ./STGUpload.sql -ErrorAction SilentlyContinue
 
 # Process all files corresponding to the given pattern
 Get-ChildItem -Path $Exec_Dir -Filter $Pattern |
@@ -102,6 +135,14 @@ Get-ChildItem -Path $Exec_Dir -Filter $Pattern |
 	  # Information message
 	  Write-Host "Process for date:",$DateExtract.ToString("MMM-yyyy")
 	  
+	  # Create the SQL command to upload data from STG
+	  $UploadCmd  = "STG_DIA_Upload_DataPoints '"+$HierarchyName+"','"+$IndustryName+"','"
+	  $UploadCmd += $Prefix+$Company+"','"+$ScenarioName+"','"
+	  $UploadCmd += $DateExtract.ToString('dd-MMM-yyyy')+"'"
+
+	  # Append to file
+	  $UploadCmd >> STGUpload.sql
+
 	  # Create a temporary file to generate the SQL script
 	  $TempFile = New-TemporaryFile
 	  
