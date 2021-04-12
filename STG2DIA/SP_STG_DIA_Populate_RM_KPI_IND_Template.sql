@@ -1,9 +1,9 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-21 09:19:19 jpdur"
+--                     Time-stamp: "2021-04-11 18:14:37 jpdur"
 -- ------------------------------------------------------------------------------
 
-CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPIIndustryTemplate] ( @IndustryName as varchar(100) )
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_IND_Template] ( @IndustryName as varchar(100) )
 as
 BEGIN
 
@@ -15,15 +15,15 @@ BEGIN
       set @IsConfirmed = 1
       
       -- Step 1 we just add 1 line for each industry 
-      merge into RainmakerLDCJP_OAT.dbo.RM_KPIIndustryTemplate
+      merge into RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template
       using (
       	    Select @IndustryID as IndustryId 
 	  ) x
       on
-      x.IndustryID = RM_KPIIndustryTemplate.IndustryID
+      x.IndustryID = RM_KPI_IND_Template.IndustryID
       when NOT MATCHED THEN
-          INSERT (IndustryID,IsConfirmed,ChangedBy,ChangedOn)
-	  VALUES(x.IndustryID,@IsConfirmed,'Via Script',getdate());
+          INSERT (  IndustryID, IsConfirmed,CreatedBy       ,CreatedOn)
+	  VALUES (x.IndustryID,@IsConfirmed,'Via Script JPD',getdate());
 
 END
 GO

@@ -385,5 +385,6 @@ EXEC STG_DIA_Populate_RM_KPICompanyConfigNodeAssociation_Company 'Income Stateme
 EXEC STG_DIA_Populate_RM_KPICompanyConfigNodeDataItemAssociation 'Income Statement','Textile Product Mills (314)','Ecuador Clothing'
 
 
+select * from DataPointValues 
 
 

@@ -1,12 +1,37 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-03-24 14:44:10 jpdur"
+                       Time-stamp: "2021-04-06 10:21:15 jpdur"
    ------------------------------------------------------------------------------ */
 
 -- Objective is to upload all the datapoints corresponding to a series/Collection i.e.
 -- for a Hierarchy/Industry/Company and a Date
 -- v1 By default // Monthly- Draft - Financials ==> To be improved in future version
 -- based on the E004 model where FinalLeaves are by definition L1(No children) + L2
+
+-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- Approach: Extract the list of Nodes based on
+-- 1) RM_KPICompanyConfigNodeAssociation
+-- and then filtered via RM_Node in order to know the different level of the nodes via Top/L1/L2/L3
+-- 2) RM_KPICompanyConfigNodeDataItemAssociation
+-- 3) Dimension step is de facto skipped as Dimensions are not currently used
+-- 4) Get the data value -- Link with the data copied as part of the staging -->
+--    main isse as we have to remap it back to the data in the staging area
+--    only possible mapping is actually based on the name (assumed to be unique so no big deal)
+-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- Mapping currently relies on the fact that the RM_DataItemID is found in NodeDefCompany
+-- 	 where NC.RM_DataItemID = l.DataItemID
+-- i.e the ID in RM_DataItem is stored in NodeDefCompany as DataItemId
+-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- What about the reuse ??? --> It would imply that the remapping has to be done each time the process
+-- is executed. Only condition so that we can remap for each company as the DataItem can be reused for
+-- different companies at different places within the structure
+-- TBC with Orange and the DataPpoints created initially for Teleline
+-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- --> Difficulty in order to link to the DataPoints if the creation of the industry/company
+-- has not been made through the staging area ==> Mapping is lost ???
+-- How to be able to properly identify if the name is not unique (or an easy identifier) 
+-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Upload_DataPoints] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100),
 @ScenarioName as varchar(100), @CollectionDate as date)

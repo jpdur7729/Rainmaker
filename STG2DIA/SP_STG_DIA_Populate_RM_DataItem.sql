@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-03-21 20:46:35 jpdur"
+                       Time-stamp: "2021-04-11 18:07:09 jpdur"
    ------------------------------------------------------------------------------ */
 
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_DataItem] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
@@ -14,16 +14,16 @@ BEGIN
       declare @IndustryID as nvarchar(36)
       declare @KPIIndustryTemplateID as varchar(36)
       set @IndustryID  = (select ID from IndustryList where Name = @IndustryName )
-      set @KPIIndustryTemplateID  = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPIIndustryTemplate where IndustryID = @IndustryID )
+      set @KPIIndustryTemplateID  = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template where IndustryID = @IndustryID )
 
       declare @CompanyID as nvarchar(36)
       declare @KPICompanyConfigurationID as nvarchar(36)
       -- set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
       set @CompanyID   = (select ID from CompanyList where Name = @CompanyName)
-      set @KPICompanyConfigurationID = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPICompanyConfiguration where CompanyID = @CompanyID )
+      set @KPICompanyConfigurationID = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template where CompanyID = @CompanyID )
 
       declare @Description as nvarchar(50)
-      set @Description = 'Created by STG_DIA_Populate_RM_DataItem'
+      set @Description = 'JPD /'+@HierarchyName+'/'+@IndustryName
 
       -- Create the default value for RM_DataItem
       declare @IsDebit as BIT
@@ -37,68 +37,91 @@ BEGIN
       declare @Scale as integer
       set @Scale = 2
 
-      -- In case RM_DataItemID has not been populated // should only be called once and on the initial envt
-      -- the definition of NodeDefCompany has been modified accordingly 
-      update NodeDefCompany set RM_DataItemID = NEWID() where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and RM_DataItemID is null
+      -- Store the value type ID needed
+      declare  @ValueTypeID as varchar(36) =  (select ID from RainmakerLDCJP_OAT.dbo.RMX_ValueType where Name = 'Numeric')
 
-	  -- -------------------------------------------------------------------------------------------
-      -- Create a temporary table with all the final leaves for a given Hierarchy/Industry/Company
-      -- These are all the level1 when there is no level 2 and all level 2 for the company
-      -- -------------------------------------------------------------------------------------------
-      select * into #FinalLeaves from (
-      	     select Name,RM_DataItemID,ID,RM_NODE_ID,level from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 2
-      	     	    union
-      	     select Name,RM_DataItemID,ID,RM_NODE_ID,level from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 1
-      	     and ID not in (select ParentNodeDefID from Hierarchies)
-      ) as tmp
+      -- Process all the final Leaves for the Hierarchy/Industry/Company
+      select * into #ListNodesDataItemNames from (
+      	     select ID as STGID,Name from NodeDef         where HierarchyID = @HierarchyID
+	     union 
+      	     select ID as STGID,Name from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID
+	     union 
+      	     select ID as STGID,Name from NodeDefCompany  where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
+      ) tmp
 
-	  select * from #FinalLeaves
+      -- Eliminate all the Nodes which are a parent --> we only get the FinalLeaves
+      select * into #FinalLeaves from
+      	     (select * from #ListNodesDataItemNames where STGID not in (select ParentNodeDefID from Hierarchies)) tmp
 
-       -- -- Create the list of Unique Names with the ID that will be used to create RM_DataItem and Dim_RM_DataItem
-       -- select * into #FinalLeavesUniqueID from (select top 1 NEWID() as RM_DataItemID,Name from #FinalLeaves) as tmp
-       -- delete from #FinalLeavesUniqueID
+	  -- Eliminate duplicate Names 
+	  select *,NEWID() as RM_DataItemID into #FinalLeavesUName from (select distinct Name from #FinalLeaves) tmp
 
-       -- -- Populate the structure with all the distinct Names 
-       -- merge into #FinalLeavesUniqueID Target
-       -- using (
-       -- 	  select distinct Name from #FinalLeaves
-       -- ) x
-       -- 	  on x.Name = Target.Name 
-       -- 	  when not matched then 
-       -- 	       insert VALUES (NEWID(),x.name) ;
-      
-      -- The key criteria in that table is the unicity of the name so
-      merge into RainmakerLDCJP_OAT.dbo.RM_DataItem RM_DI
-      using (
-      	    select RM_DataItemID,Name,
-	    	   @IndustryID as IndustryID,@HierarchyID as KPITypeID,@IsDebit as IsDebit,@IsAggregate as IsAggregate,@Scale as Scale,
-		   @Description as Description,
-	    	   (select ID from RainmakerLDCJP_OAT.dbo.RMX_ValueType where Name = 'Numeric') as ValueTypeID
-	    from #FinalLeaves
-      ) x
-      on x.RM_DataItemID = RM_DI.ID
-      WHEN NOT MATCHED then
-      	   INSERT (ID,IndustryID,KPITypeID,IsDebit,IsAggregate,Scale,ValueTypeID,Name,Description,createdOn,IsActive)
-	   VALUES (x.RM_DataItemID,x.IndustryID,x.KPITypeID,x.IsDebit,x.IsAggregate,x.Scale,x.ValueTypeID,x.Name,x.Description,getdate(),@IsActive) ;
-      
-      -- The key criteria in that table is the unicity of the name so
-      -- a similar merge is made into the Dim_RM_DataItem
-      merge into RainmakerLDCJP_OAT.dbo.Dim_RM_DataItem RM_DI
-      using (
-      	    select RM_DataItemID,Name,
-	    	   @IndustryID as IndustryID,@HierarchyID as KPITypeID,@IsDebit as IsDebit,@IsAggregate as IsAggregate,@Scale as Scale,
-		   @Description as Description,
-	    	   (select ID from RainmakerLDCJP_OAT.dbo.RMX_ValueType where Name = 'Numeric') as ValueTypeID,
-		   -- Add the InvIndustryID and the InvIndustryName
-		   (select InvIndustryID   from RainmakerLDCJP_OAT.dbo.RM_Industry where ID = @IndustryID) as InvIndustryID,
-		   (select InvIndustryName from RainmakerLDCJP_OAT.dbo.RM_Industry where ID = @IndustryID) as InvIndustryName
---	    from #FinalLeavesUniqueID 
-	    from #FinalLeaves
-      ) x
-      on x.Name = RM_DI.DataItemName and x.IndustryID = RM_DI.IndustryID and x.KPITypeId = RM_DI.KPITypeID
-      WHEN NOT MATCHED then
-      	   INSERT (DataItemID,IndustryID,KPITypeName,KPITypeID,IsDebit,IsAggregate,Scale,ValueTypeName,ValueTypeID,DataItemName,DataItemDescription,IsSystemDefined,IsActive,InvIndustryID,InvIndustryName)
-	   VALUES (x.RM_DataItemID,x.IndustryID,@HierarchyName,x.KPITypeID,x.IsDebit,x.IsAggregate,x.Scale,'Numeric',x.ValueTypeID,x.Name,x.Description,@IsSystemDefined,@IsActive,x.InvIndustryID,x.InvIndustryName) ;
+      -- To prevent any issues Select the data from RM_DataItem
+      select * into #KPIListDataItem
+      from RainmakerLDCJP_OAT.dbo.RM_DataItem
+      where CreatedOn > '01-Apr-2021' and KPITypeId = @HierarchyID and IndustryId = @IndustryID
+
+      ---- Update the list of DataItems accordingly for those already existing 
+      --merge into #FinalLeavesUName fl
+      --using #KPIListDataItem KPIListDataItem
+      --on KPIListDataItem.Name = fl.Name
+      --when MATCHED THEN
+      --	   UPDATE SET RM_DataItemID = KPIListDataItem.ID;
+
+      -- Keep and store the DateTime to be used to flag all records
+      declare @CurrentDateTime as datetime = getdate() 
+
+	  -- select '#KPIListDataItem-Analysis0',Name,count(*) from #KPIListDataItem group by Name having count(*) > 1 order by 3 desc,2
+
+      -- Now that we have the list of names let's process the copy RM_DataItem table
+      merge into #KPIListDataItem as KPIListDataItem
+      using #FinalLeavesUName fl
+      on KPIListDataItem.Name = fl.Name
+      when not MATCHED THEN
+      	   INSERT (Id     , IndustryId, KPITypeId,   IsDebit, IsAggregate, Scale, ValueTypeId,CreatedBy,CreatedOn       , Description,   Name, IsSystemDefined, IsActive)
+	       VALUES (NEWID(),@IndustryID,@HIerarchyID,@IsDebit,@IsAggregate,@Scale,@ValueTypeID,'JPD'    ,@CurrentDateTime,@Description,fl.Name,@IsSystemDefined,@IsActive) ;
+
+	   -- select '#KPIListDataItem',* from #KPIListDataItem
+	   -- select '#KPIListDataItem-Analysis',Name,count(*) from #KPIListDataItem group by Name having count(*) > 1 order by 3 desc,2
+	   
+      -- Update the list of Nodes/Final Leaves accordingly for all the Names
+      merge into #FinalLeavesUName fl
+      using #KPIListDataItem KPIListDataItem
+      on KPIListDataItem.Name = fl.Name
+      when MATCHED THEN
+      	   UPDATE SET RM_DataItemID = KPIListDataItem.ID;
+
+      -- For the Different Final Leaves with the same name we indicate it points to the same DataItem
+      select * into #FinalLeaves2 from (select fl.*,fu.RM_DataItemID from #FinalLeaves fl,#FinalLeavesUName fu where fl.Name = fu.name) tmp
+
+	 -- select 'cnt #FinalLeaves',count(*) from #FinalLeaves
+	 -- select 'cnt #FinalLeaves2',count(*) from #FinalLeaves2
+
+      -- Insert the new records into the RM_DataItem table flagged because they all have 
+      -- the same CreatedOn value 
+      INSERT INTO RainmakerLDCJP_OAT.dbo.RM_DataItem
+      select * from #KPIListDataItem where CreatedOn = @CurrentDateTime
+
+      -- ---------------------------------------------------------------------------
+      -- Update the various NodeDef/NodeDefIndustry,NodeDefCompany tables with the
+      -- correct value of RM_NODE_ID obtained
+      -- ---------------------------------------------------------------------------
+	  -- Currently no RM_DataItemID field at the top level
+      -- merge into NodeDef NodeDef
+      -- using #FinalLeaves2 fl
+      -- on NodeDef.ID = fl.STGID
+      -- when MATCHED then
+      -- 	   update set RM_DataItemID = fl.RM_DataItemID;
+      merge into NodeDefIndustry NodeDef
+      using #FinalLeaves2 fl
+      on NodeDef.ID = fl.STGID
+      when MATCHED then
+      	   update set RM_DataItemID = fl.RM_DataItemID;
+      merge into NodeDefCompany NodeDef
+      using #FinalLeaves2 fl
+      on NodeDef.ID = fl.STGID
+      when MATCHED then
+      	   update set RM_DataItemID = fl.RM_DataItemID;
 
 END
 GO

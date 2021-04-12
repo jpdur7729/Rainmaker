@@ -1,14 +1,14 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-26 17:08:46 jpdur"
+--                     Time-stamp: "2021-04-11 11:23:51 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
 
 CREATE or ALTER PROCEDURE [dbo].[PS_STG_LINK_INDUSTRY_COMPANY](
-       @TopLevelName as varchar(100),@BottomLevelName as varchar(100),
+       @TopLevelName as varchar(250),@BottomLevelName as varchar(250),
        @HierarchyName as varchar(100),@IndustryName as varchar(100),@CompanyName as varchar(100),
-       @GrandParentLevelName as varchar(100)
+       @GrandParentLevelName as varchar(250)
        )
 as
 BEGIN

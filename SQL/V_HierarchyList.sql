@@ -25,5 +25,5 @@ GO
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 create or alter VIEW HierarchyList
 as
-	Select Id as ID, Name as Name from RMX_KpiType 
+	Select Id as ID, Name as Name from RainmakerLDCJP_OAT.dbo.RMX_KpiType 
 

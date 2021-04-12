@@ -1,11 +1,11 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-03-22 16:48:42 jpdur"
+                       Time-stamp: "2021-04-11 11:39:14 jpdur"
    ------------------------------------------------------------------------------ */
 
 -- Version 1 add if data point is defined at company level 1 or 2
 CREATE or ALTER PROCEDURE [dbo].[PS_STG_ADD_DATAPOINT_VALUE_COMPANYL12](
-       @TopLevelName as varchar(100),@BottomLevelName as varchar(100),@IndustryLevelName as varchar(100),
+       @TopLevelName as varchar(250),@BottomLevelName as varchar(250),@IndustryLevelName as varchar(100),
        @HierarchyName as varchar(100),@IndustryName as varchar(100),@CompanyName as varchar(100),
        @Scenario as varchar(100),@DateValue as date,@Amount as float)
 as

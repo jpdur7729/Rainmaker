@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-26 17:08:09 jpdur"
+--                     Time-stamp: "2021-04-11 11:22:07 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -8,7 +8,7 @@
 -- ---------------------------------------------------------
 -- Create node at the Hierarchy/Generic level "Category" 
 -- ---------------------------------------------------------
-CREATE or ALTER PROCEDURE [dbo].[PS_STG_CREATE_NODE](@LevelName as varchar(100),@HierarchyName as varchar(100),@SortOrder as integer = 0,@LevelNumber as integer = 1)
+CREATE or ALTER PROCEDURE [dbo].[PS_STG_CREATE_NODE](@LevelName as varchar(250),@HierarchyName as varchar(100),@SortOrder as integer = 0,@LevelNumber as integer = 1)
 as
 BEGIN
 

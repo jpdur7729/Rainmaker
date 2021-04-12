@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------
 #                  Author    : FIS - JPD
-#                  Time-stamp: "2021-02-26 08:14:02 jpdur"
+#                  Time-stamp: "2021-04-08 17:17:28 jpdur"
 # -------------------------------------------------------------------------
 
 * Overview
@@ -9,7 +9,7 @@ Here is the lists of steps in order to successfully deploy the staging tables
 * The key tables
 In total 6 tables are actually used as part of the Staging area
 
-** Link with Static Data
+** TODO Link with Static Data
 | Files       | Comments                              | DIA - logical equivalent               |
 |-------------+---------------------------------------+----------------------------------------|
 | T_Lists.sql | HierachyList/IndustryList/CompanyList | RMX_KPIType / RM_Industry / RM_Company |
@@ -31,3 +31,71 @@ In total 6 tables are actually used as part of the Staging area
 |------------------------+----------+--------------------------|
 | T_DataPointMapping.sql |          |                          |
 | T_DataPointValues.sql  |          |                          |
+
+* Order of the files to be deployed
+
+Classify the data in 2 parts - GitHub only the remote part
+** Remote deployment
+RainmakerLDCJP_OATSTG
+
+| Order | File                                         | Comments                    |
+|-------+----------------------------------------------+-----------------------------|
+|       | T_NodeDef.sql                                |                             |
+|       | T_DataPointTables.sql                        |                             |
+|       | T_Hierarchies.sql                            |                             |
+|-------+----------------------------------------------+-----------------------------|
+|       | V_STG_CompanyList.sql                        | Link with the actual tables |
+|       | V_STG_HierarchyList.sql                      |                             |
+|       | V_STG_IndustryList.sql                       |                             |
+|       | V_STG_NodeListView.sql                       | View for Recursive Function |
+|-------+----------------------------------------------+-----------------------------|
+|       | SP_PS_STG_ADD_DATAPOINT_VALUE_COMPANYL12.sql | Scripts used to process     |
+|       | SP_PS_STG_ADD_DATAPOINT_VALUE.sql            | the spreadsheets received   |
+|       | SP_PS_STG_CREATE_DATAPOINT_internal.sql      | from LDC                    |
+|       | SP_PS_STG_CREATE_DATAPOINT.sql               |                             |
+|       | SP_PS_STG_CREATE_NODECOMPANY.sql             |                             |
+|       | SP_PS_STG_CREATE_NODEINDUSTRY.sql            |                             |
+|       | SP_PS_STG_CREATE_NODE.sql                    |                             |
+|       | SP_PS_STG_LINK_COMPANY_COMPANY.sql           |                             |
+|       | SP_PS_STG_LINK_GENERIC_INDUSTRY.sql          |                             |
+|       | SP_PS_STG_LINK_GENERIC.sql                   |                             |
+|       | SP_PS_STG_LINK_INDUSTRY_COMPANY.sql          |                             |
+|-------+----------------------------------------------+-----------------------------|
+
+** Local deployment
+
+| Order | File                                         | Comments                           |
+|-------+----------------------------------------------+------------------------------------|
+|       | T_NodeDef.sql                                |                                    |
+|       | T_DataPointTables.sql                        |                                    |
+|       | T_Hierarchies.sql                            |                                    |
+|       | T_Lists.sql                                  | These tables are replaced by views |
+|       |                                              | in the Remote Deployment           |
+|-------+----------------------------------------------+------------------------------------|
+|       | V_STG_NodeListView.sql                       | View for Recursive Function        |
+|-------+----------------------------------------------+------------------------------------|
+|       | SP_PS_STG_ADD_DATAPOINT_VALUE_COMPANYL12.sql | Scripts used to process            |
+|       | SP_PS_STG_ADD_DATAPOINT_VALUE.sql            | the spreadsheets received          |
+|       | SP_PS_STG_CREATE_DATAPOINT_internal.sql      | from LDC                           |
+|       | SP_PS_STG_CREATE_DATAPOINT.sql               |                                    |
+|       | SP_PS_STG_CREATE_NODECOMPANY.sql             |                                    |
+|       | SP_PS_STG_CREATE_NODEINDUSTRY.sql            |                                    |
+|       | SP_PS_STG_CREATE_NODE.sql                    |                                    |
+|       | SP_PS_STG_LINK_COMPANY_COMPANY.sql           |                                    |
+|       | SP_PS_STG_LINK_GENERIC_INDUSTRY.sql          |                                    |
+|       | SP_PS_STG_LINK_GENERIC.sql                   |                                    |
+|       | SP_PS_STG_LINK_INDUSTRY_COMPANY.sql          |                                    |
+|-------+----------------------------------------------+------------------------------------|
+|       |                                              | Populate the table with some Data  |
+
+** Local files
+
+|   | T_Lists.sql | Only in Local DIA where there is no View |
+|   |             |                                          |
+
+
+* TODO Stored Procedure to DROP the Stored Procedures
+The aim is to start from a clean environment by deleting all
+the stored procedure which mauy have been previously deploed
+That way we reforce all the stored procedures/functions to be the latest version
+

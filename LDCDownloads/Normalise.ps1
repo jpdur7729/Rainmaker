@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-03-24 14:34:07 jpdur"
+#                     Time-stamp: "2021-04-08 07:26:16 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -9,7 +9,7 @@ param(
     [Parameter(Mandatory=$false)] [string] $Result = "Results.xlsx",
     [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
     [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
-    [Parameter(Mandatory=$false)] [ValidateSet("runSQL","GenerateSQLScript")] [string] $Action = "runSQL",
+    [Parameter(Mandatory=$false)] [ValidateSet("runSQL","GenerateSQLScript")] [string] $Action = "GenerateSQLScript",
     [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly","DataPointOnly","All")] [string] $Scope = "StructureOnly",
     [Parameter(Mandatory=$false)] [ValidateSet("Top","Industry","Company")] [string] $HierarchyLevel = "Company",
     [Parameter(Mandatory=$false)] [string] $Script = "Results.sql",

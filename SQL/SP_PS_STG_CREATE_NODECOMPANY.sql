@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-27 15:04:45 jpdur"
+--                     Time-stamp: "2021-04-11 11:21:21 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -8,9 +8,9 @@
 -- ---------------------------------------------------------
 -- Create node at the Company level "SubCategory2 or 3" 
 -- ---------------------------------------------------------
-CREATE or ALTER PROCEDURE [dbo].[PS_STG_CREATE_NODECOMPANY](@LevelName as varchar(100),
+CREATE or ALTER PROCEDURE [dbo].[PS_STG_CREATE_NODECOMPANY](@LevelName as varchar(250),
        @HierarchyName as varchar(100),@IndustryName as varchar(100),@CompanyName as varchar(100),
-       @ParentLevelName as varchar(100),
+       @ParentLevelName as varchar(250),
        @SortOrder as integer,@LevelNumber as integer)
 as
 BEGIN

@@ -16,8 +16,12 @@ use [RainmakerLDCJP_OAT]
 -- DECLARE @SearchStr nvarchar(100) = 'CBA3FCCE-DD23-4751-AAA6-2E55C1AA1A7A' -- Data for TopNode Cashflows // NodeID
 -- DECLARE @SearchStr nvarchar(100) = '1C317846-6286-EB11-818F-005056AB4D1B' -- Data for TopNode Cashflows // NodeID
 -- DECLARE @SearchStr nvarchar(100) = '053527C0-0876-420C-B57E-ACDA02BB1057' -- Workflow ID
-DECLARE @SearchStr nvarchar(100) = '4488608B-FC86-EB11-818F-005056AB4D1B' -- Node ID ?
-
+-- DECLARE @SearchStr nvarchar(100) = 'Cash Flows - Operating - Other Operating Cash Payments' -- RM_DataItem
+-- DECLARE @SearchStr nvarchar(100) = 'B0E82D4D-D119-4DCD-B486-06F01DAD576F' -- Usage of corresponding ID
+-- DECLARE @SearchStr nvarchar(100) = '2C050416-6366-42BD-007B-08D8C4093146' -- AttributeID used in KPI_Collection_Dimension
+-- DECLARE @SearchStr nvarchar(100) = '00D29C4B-0BF1-489D-0004-08D8C409313F' -- Attribute Group ID of the previous one
+-- DECLARE @SearchStr nvarchar(100) = '9F7CBE1E-16E8-4842-BEA3-B1B910745AC7' -- CollectionPeriodID
+DECLARE @SearchStr nvarchar(100) = '42F46685-C1E0-4F71-C796-08D8EE896D5B' -- Batch_Collection_Dimension ID not used
 
 
 DECLARE @Results TABLE (ColumnName nvarchar(370), ColumnValue nvarchar(3630))

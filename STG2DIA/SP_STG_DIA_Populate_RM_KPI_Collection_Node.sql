@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-01 15:44:39 jpdur"
+--                     Time-stamp: "2021-04-09 17:41:17 jpdur"
 -- ------------------------------------------------------------------------------
 
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_Collection_Node ] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) ,
@@ -15,89 +15,66 @@ BEGIN
       declare @IndustryID as nvarchar(36)
       declare @KPIIndustryTemplateID as varchar(36)
       set @IndustryID  = (select ID from IndustryList where Name = @IndustryName )
-      set @KPIIndustryTemplateID  = (select ID from RM_KPIIndustryTemplate where IndustryID = @IndustryID )
+      set @KPIIndustryTemplateID  = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template where IndustryID = @IndustryID )
 
       declare @CompanyID as nvarchar(36)
       declare @KPICompanyConfigurationID as nvarchar(36)
-      set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
-      set @KPICompanyConfigurationID = (select ID from RM_KPICompanyConfiguration where CompanyID = @CompanyID )
+      set @CompanyID   = (select ID from CompanyList where Name = @CompanyName)
+      set @KPICompanyConfigurationID = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template where CompanyID = @CompanyID )
 
       declare @WorkflowStatusID as nvarchar(36)
-      set @WorkflowStatusID = (select ID from RMX_WorkflowStatus where Name = 'Not Started')
+      set @WorkflowStatusID = (select ID from RainmakerLDCJP_OAT.dbo.RMX_WorkflowStatus where Name = 'Not Started')
 
       -- Extra WorkflowID
-      declare @WorkflowID as nvarchar(36)
-      set @WorkflowID = (select ID from RM_Workflow where CompanyID = @CompanyID and EffectiveDate = @CollectionDate and WorkflowStatusID = @WorkflowStatusID)
+      declare @WorkflowID  as nvarchar(36)
+      declare @NewWorkflow as int  -- 1 if New Workflow // 0 if Old workflow
+      EXEC STG_DIA_Populate_RM_Workflow @HierarchyName,@IndustryName,@CompanyName,@CollectionDate,@ScenarioName
+      -- Parameters in order to know if the RM_Workflow is created or no
+      ,@WorkflowID,@NewWorkflow
 
-      -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      -- 2 stages: 1 Insert the nodes with their description/sequence // No ParentKPICollectionNodeID
-      --           2 Add the link with the parent record
-      -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      -- -------------------------------------------------------------------------
+      -- Insert the nodes for all level in one go --> simpler and more efficient
+      -- -------------------------------------------------------------------------
+      -- We process in one go for the different layer ie.e NodeDef amd NodeDefIndustry
+      select * into #ListNodesDataItemNames from (
+      	     -- the longest category first
+      	     select ID as STGID,Name,RM_NODE_ID,FullPath,SortOrder as Sequence,'NodeDefIndustry' as Category from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID
+	     union 
+      	     select ID as STGID,Name,RM_NODE_ID,FullPath,SortOrder as Sequence,'NodeDefCompany'  as Category from NodeDefCompany  where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
+	     union 
+      	     select ID as STGID,Name,RM_NODE_ID,FullPath,SortOrder as Sequence,'NodeDef'         as Category from NodeDef         where HierarchyID = @HierarchyID
+      ) tmp
 
-      -- Step 1+2 for NodeDef 
-      merge into RM_KPI_Collection_Node KCN
+      -- We filter the nodes only leveraging Hierarchies and dropping Final Leaves
+      select NEWID() as ID,*,NEWID() as ParentCollectionNodeID into #ListNodesNames from
+      	     (select * from #ListNodesDataItemNames where ID in (select ParentNodeDefID from Hierarchies)) tmp
+
+      -- Update the #ListNodesBames in order to be able to reflect the parent ID
+      update #ListNodesNames set ParentCollectionNodeID = null where Category = 'NodeDef'
+
+      -- Update the list with the reference of the parent
+      merge into #ListNodesNames LNM
       using (
-      	    select @WorkflowID as WorkflowID, RM_NODE_ID as NodeID,
-	    	   null as ParentKPICollectionNodeId,@HierarchyID as KPITypeID,SortOrder as Sequence
-      	    from NodeDef where HierarchyID = @HierarchYID
+      	    select l1.ID as ID, l2.ID as ParentCollectionNodeID
+	    from #ListNodesNames l1, Hierachies h, #ListNodesNames l2
+	    where l1.STGID = h.NodeDefID and l2.STGID = h.ParentNodeDefID 
       ) x
-      on x.WorkflowID = KCN.WorkflowID and x.KPITypeID = KCN.KPITypeID and x.NodeID = KCN.NodeID
-      when NOT MATCHED then
-      	   INSERT (ID,WorkflowID,NodeID,ParentKPICollectionNodeId,KPITypeID,Sequence)
-	   VALUES (NEWID(),x.WorkflowID,x.NodeID,x.ParentKPICollectionNodeId,x.KPITypeID,x.Sequence) ;
+      on x.ID = LNM.ID
+      when matched then
+      	   update set ParentCollectionNodeID = x.ParentCollectionNodeID;
 
-      -- Step 1+2 for NodeDefIndustry 
-      merge into RM_KPI_Collection_Node KCN
-      using (
-      	    select @WorkflowID as WorkflowID, NI.RM_NODE_ID as NodeID,
-	    	   KCN.ID as ParentKPICollectionNodeId,@HierarchyID as KPITypeID,NI.SortOrder as Sequence
-      	    from NodeDefIndustry NI,NodeDef NH,Hierarchies H,RM_KPI_Collection_Node KCN
-	    where NI.HierarchyID = @HierarchYID and NI.IndustryID = @IndustryID
-	    	  and H.NodeDefID = NI.ID and H.ParentNodeDefID = NH.ID
-		  and NH.RM_NODE_ID = KCN.NodeID 
-      ) x
-      on x.WorkflowID = KCN.WorkflowID and x.KPITypeID = KCN.KPITypeID and x.NodeID = KCN.NodeID
-      when NOT MATCHED then
-      	   INSERT (ID,WorkflowID,NodeID,ParentKPICollectionNodeId,KPITypeID,Sequence)
-	   VALUES (NEWID(),x.WorkflowID,x.NodeID,x.ParentKPICollectionNodeId,x.KPITypeID,x.Sequence) ;
-
-      -- Step 1+2 for NodeDefCompany --> Suppressing the FinalLeaves from NodeDefCompany
-      -- -------------------------------------------------------------------------------------------
-      -- Create a temporary table with all the final leaves for a given Hierarchy/Industry/Company
-      -- These are all the level1 when there is no level 2 and all level 2 for the company
-      -- -------------------------------------------------------------------------------------------
-      select * into #FinalLeaves from (
-      	     select * from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 2
-      	     	    union
-      	     select * from NodeDefCompany where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and level = 1
-      	     and ID not in (select ParentNodeDefID from Hierarchies)
-      ) as tmp
-
-      -- select 'Final',* from #FinalLeaves
-      
-      select * into #FilteredNodeDefCompany from (
-      	     select * from NodeDefCompany
-	     where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
-	     	   and ID not in (select ID From #FinalLeaves)
-      ) as tmp
-
-      -- select 'Filtered',* from #FilteredNodeDefCompany 
-
-      -- A priori we only have left level=1 elements at NodeDefCompany
-      merge into RM_KPI_Collection_Node KCN
-      using (
-      	    select @WorkflowID as WorkflowID, NC.RM_NODE_ID as NodeID,
-	    	   KCN.ID as ParentKPICollectionNodeId,@HierarchyID as KPITypeID,NC.SortOrder as Sequence
-      	    from #FilteredNodeDefCompany NC,NodeDefIndustry NI,Hierarchies H,RM_KPI_Collection_Node KCN
-	    where NC.HierarchyID = @HierarchYID and NC.IndustryID = @IndustryID
-	    	  and H.NodeDefID = NC.ID and H.ParentNodeDefID = NI.ID
-		  and NI.RM_NODE_ID = KCN.NodeID 
-      ) x
-      on x.WorkflowID = KCN.WorkflowID and x.KPITypeID = KCN.KPITypeID and x.NodeID = KCN.NodeID
-      when NOT MATCHED then
-      	   INSERT (ID,WorkflowID,NodeID,ParentKPICollectionNodeId,KPITypeID,Sequence)
-	   VALUES (NEWID(),x.WorkflowID,x.NodeID,x.ParentKPICollectionNodeId,x.KPITypeID,x.Sequence) ;
-
+     -- Add the nodes accordingly i.e insert if it is a new Workflow
+     if (@NewWorkflow = 1) begin
+     	INSERT into RainmakerLDCJP_OAT.dbo.RM_KPI_CollectionNode
+           (  ID,  ParentCollectionNodeID,  NodeID,  KPITypeID,	WorkflowID,  Sequence)
+	select ID,ParentCollectionNodeID,RM_Node_ID as NodeID,
+      		@HierarchyID as KPITypeID,
+      		@WorkflowID  as WorkflowID,
+		Sequence
+	 from #ListNodesName
+	
+     end
+     
 END
 GO
 

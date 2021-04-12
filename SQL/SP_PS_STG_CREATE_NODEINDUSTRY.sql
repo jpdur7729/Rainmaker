@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-26 17:07:13 jpdur"
+--                     Time-stamp: "2021-04-11 11:21:48 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -8,9 +8,9 @@
 -- ---------------------------------------------------------
 -- Create node at the Industry level "SubCategory1" 
 -- ---------------------------------------------------------
-CREATE or ALTER PROCEDURE [dbo].[PS_STG_CREATE_NODEINDUSTRY](@LevelName as varchar(100),
+CREATE or ALTER PROCEDURE [dbo].[PS_STG_CREATE_NODEINDUSTRY](@LevelName as varchar(250),
        @HierarchyName as varchar(100),@IndustryName as varchar(100),
-       @ParentLevelName as varchar(100),
+       @ParentLevelName as varchar(250),
        @SortOrder as integer = 0,
        @LevelNumber as integer = 1)
 as

@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-21 20:40:24 jpdur"
+--                     Time-stamp: "2021-04-09 09:17:15 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -26,7 +26,9 @@ Level 	      integer		  NOT NULL, -- Level within a hierarchy
 HierarchyID   varchar(100)	  NOT NULL,  -- Hierarchy definition
 SortOrder     integer		  NOT NULL  DEFAULT 0,
 -- Add this ID to make it unique to idetify the parent without ambiguity
-RM_NODE_ID	UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL
+RM_NODE_ID	UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL,
+-- Identify the full path of the Node - To be added as part of description in Node Association etc...
+FullPath      varchar(1000) 	 NULL
 )
 
 -- Add constraints so that there is only 1 value per date
@@ -54,9 +56,11 @@ HierarchyID   varchar(36)	  NOT NULL,  -- Hierarchy ID
 SortOrder     integer		  NOT NULL  DEFAULT 0,
 ParentLevelName varchar(250) 	  NOT NULL,
 -- Add this ID to make it unique to idetify the parent without ambiguity
-RM_NODE_ID	UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL
+RM_NODE_ID	UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL,
 -- Add this ID to make it easy and unique to idetify the DataItem without ambiguity
 RM_DataItemID   UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL,
+-- Identify the full path of the Node - To be added as part of description in Node Association etc...
+FullPath      varchar(1000) 	 NULL
 )
 
 -- Add constraints so that there is only 1 value per date
@@ -83,9 +87,11 @@ HierarchyID   varchar(36)	  NOT NULL,  -- Hierarchy ID
 SortOrder     integer		  NOT NULL DEFAULT 0,
 ParentLevelName varchar(250) 	  NOT NULL,
 -- Add this ID to make it unique to idetify the parent without ambiguity
-RM_NODE_ID	UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL
+RM_NODE_ID	UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL,
 -- Add this ID to make it easy and unique to idetify the DataItem without ambiguity
 RM_DataItemID   UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL,
+-- Identify the full path of the Node - To be added as part of description in Node Association etc...
+FullPath      varchar(1000) 	 NULL
 )
 
 -- Add constraints so that there is only 1 value per date

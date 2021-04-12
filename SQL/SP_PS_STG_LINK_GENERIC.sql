@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-26 17:08:37 jpdur"
+--                     Time-stamp: "2021-04-11 11:23:22 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -9,7 +9,7 @@
 -- Create link between Category and Subcategory 
 -- ----------------------------------------------
 CREATE or ALTER PROCEDURE [dbo].[PS_STG_LINK_GENERIC](
-       @TopLevelName as varchar(100),@BottomLevelName as varchar(100),
+       @TopLevelName as varchar(250),@BottomLevelName as varchar(100),
        @HierarchyName as varchar(100)
        )
 as

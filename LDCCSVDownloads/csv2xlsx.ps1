@@ -1,16 +1,22 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-02-27 14:59:00 jpdur"
+#                     Time-stamp: "2021-04-08 09:44:20 jpdur"
 # ------------------------------------------------------------------------------
 
 # Convert csv files to xlsx from LDCCSVDownloads to LDCDownloads
+param(
+    [Parameter(Mandatory=$false)] [string] $Exec_Dir = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition),
+    [Parameter(Mandatory=$false)] [string] $DestDirectory = "g:/Rainmaker/LDCDownloads" # Destination Directory and key parameter
+    [Parameter(Mandatory=$false)] [ValidateSet(",","|")] [string] $Delimiter = "|",
+    [Parameter(Mandatory=$true)]  [string] $Company, #Required
+    [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 - not to be used/knowm
+)
 
-# Destination Directory and key parameter
-$DestDirectory = "g:/Rainmaker/LDCDownloads"
-$filter = "*.csv"
-$Delimiter = "|"
+# Filter to access only a subset of files
+$filter = "*_"+$Company+"_*.csv"
 
-# $FileName = "6_Output_1_FIS-SortOrder_TestCo_2020_10_PL_AC_20210108 2203"
+# New FileName Example for company 004   : 002_004_PL_AC_2020_05_FIS_SortOrder_Encoded_20210315_170838
+# Old FileName Example for company TestCo: 6_Output_1_FIS-SortOrder_TestCo_2020_10_PL_AC_20210108 2203
 # The magic 1 line conversion from csv to xlsx
 # Import-Csv -Path (".\"+$FileName+".csv") -Delimiter $Delimiter | Export-Excel -Show -AutoSize -WorksheetName Query ($FileName+".xlsx")
 
@@ -34,3 +40,6 @@ Get-ChildItem -filter $filter | Foreach-Object {
 # Move to the dest Directory and mv all the Order file to the Order Directory
 cd ($DestDirectory)
 mv -Force *Order*.xlsx Order
+
+# Restore back to the initial directory
+cd ($Exec_Dir)

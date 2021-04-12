@@ -371,6 +371,22 @@ select * from RM_AttributeGroupIndustryAssociation
 -- select * from RM_DataItemAttributeGroupAssociation Useful ??
 select * from RM_KPICompanyConfigDataItemAttributeAssociation
 
+select * from RM_KPI_Collection_Node where workflowid = '58565729-D5CB-43B6-AD6B-800DE2355308' and ParentKPICollectionNodeID is null 
+--select * from RM_Node where KPITypeID = '3A526188-BF41-4E0D-AC80-FB156BA76A01' and IndustryID in (select ID from RM_Industry where InvIndustryName = 'Electrical Equipment, Appliance, and Component Manufacturing (335)') 
+select * from RM_Node where KPITypeID = '3A526188-BF41-4E0D-AC80-FB156BA76A01' and IndustryID is null and ParentNodeID is null
 
+select * from RM_KPICompanyConfigNodeAssociation where KPICompanyConfigurationID in (select ID from RM_KPICompanyConfiguration where CompanyID in (select ID from RM_Company where InvCompanyName = 'E004'))
+and isChecked = 1
 
+select * from RM_KPICompanyConfigNodeDataItemAssociation where KPICompanyConfigurationID in (select ID from RM_KPICompanyConfiguration where CompanyID in (select ID from RM_Company where InvCompanyName = 'E004'))
+and isChecked = 1
+
+-- KPI_Collection_Node - Initially 40 - Finally 43=12+15+16 
+select * from RM_KPI_Collection_Node where WorkflowID = '58565729-D5CB-43B6-AD6B-800DE2355308'
+-- KPI Collection Node - Data - Finally 90
+select * from RM_KPI_Collection_DataItem where KPICollectionNodeID in (select ID from RM_KPI_Collection_Node where WorkflowID = '58565729-D5CB-43B6-AD6B-800DE2355308')
+-- KPI Collection Dimension - Data - Finally 90
+select * from RM_KPI_Collection_Dimension where KPICollectionDataItemID in (select ID from RM_KPI_Collection_DataItem where KPICollectionNodeID in (select ID from RM_KPI_Collection_Node where WorkflowID = '58565729-D5CB-43B6-AD6B-800DE2355308'))
+-- KPI Collection Batch Dimension - Data - Finally 90 with the datapoints
+select * from RM_KPI_Collection_Batch_Dimension where KPICollectionDimensionID in (select ID from RM_KPI_Collection_Dimension where KPICollectionDataItemID in (select ID from RM_KPI_Collection_DataItem where KPICollectionNodeID in (select ID from RM_KPI_Collection_Node where WorkflowID = '58565729-D5CB-43B6-AD6B-800DE2355308')))
 
