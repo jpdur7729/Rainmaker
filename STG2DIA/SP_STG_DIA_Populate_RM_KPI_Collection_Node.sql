@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-04-09 17:41:17 jpdur"
+--                     Time-stamp: "2021-04-12 09:03:35 jpdur"
 -- ------------------------------------------------------------------------------
 
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_Collection_Node ] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) ,
@@ -30,7 +30,7 @@ BEGIN
       declare @NewWorkflow as int  -- 1 if New Workflow // 0 if Old workflow
       EXEC STG_DIA_Populate_RM_Workflow @HierarchyName,@IndustryName,@CompanyName,@CollectionDate,@ScenarioName
       -- Parameters in order to know if the RM_Workflow is created or no
-      ,@WorkflowID,@NewWorkflow
+      ,@WorkflowID OUTPUT,@NewWorkflow OUTPUT
 
       -- -------------------------------------------------------------------------
       -- Insert the nodes for all level in one go --> simpler and more efficient
