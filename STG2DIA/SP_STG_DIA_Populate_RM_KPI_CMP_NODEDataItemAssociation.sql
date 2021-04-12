@@ -3,7 +3,7 @@
                        Time-stamp: "2021-04-12 08:28:08 jpdur"
    ------------------------------------------------------------------------------ */
 
-CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_CMP_NodeDaItemAssociation] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_CMP_NodeDataItemAssociation] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
 as
 BEGIN
 

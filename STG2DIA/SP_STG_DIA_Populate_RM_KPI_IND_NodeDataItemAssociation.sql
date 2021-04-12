@@ -1,9 +1,9 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-04-11 08:30:43 jpdur"
+                       Time-stamp: "2021-04-12 08:41:15 jpdur"
    ------------------------------------------------------------------------------ */
 
-CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_IND_NodeDaItemAssociation] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100))
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_IND_NodeDataItemAssociation] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100))
 as
 BEGIN
 
@@ -18,14 +18,13 @@ BEGIN
 
       -- Process all the final Leaves for the Hierarchy/Industry/Company
       select * into #ListNodesDataItemNames from (
-      	     -- select ID as STGID,Name,NEWID() as RM_DataItemID from NodeDef         where HierarchyID = @HierarchyID
+      	     -- select ID as STGID,Name,NEWID() as RM_DataItemID,SortOrder as Sequence from NodeDef         where HierarchyID = @HierarchyID
 	     -- union 
-      	     select ID as STGID,Name,           RM_DataItemID from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID
+      	     select ID as STGID,Name,              RM_DataItemID,SortOrder as Sequence from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID
       ) tmp
 
       -- Eliminate all the Nodes which are a parent --> we only get the FinalLeaves
-      select NEWID() as ID,*,NEWID() as NodeAssociationID
-      	     into #FinalLeaves0 from
+      select NEWID() as ID,* into #FinalLeaves0 from
       	     (select * from #ListNodesDataItemNames where STGID not in (select ParentNodeDefID from Hierarchies)) tmp
 
 	-- We add the link with the Parent Node using Hierarchies 
@@ -49,11 +48,14 @@ BEGIN
 	       select NEWID()
 	 )
 
-      	 -- Set the link with the RM_KPI_IND_NodeAssociation... The link with RM_DataItemID already exists
-      	 merge into #FinalLeaves fl
+	 -- Process to extract only the UniqueParent
+	 select *,NEWID() as NodeAssociationID into #FinalLeavesUParent from (select distinct ParentPath from #FinalLeaves) tmp      	 -- Set the link with the RM_KPI_IND_NodeAssociation... The link with RM_DataItemID already exists
+
+      -- Set the link with the RM_KPI_IND_NodeAssociation... The link with RM_DataItemID already exists
+	 merge into #FinalLeavesUParent fl
 	 using (
-	       select KINA.ID,Kina.FullPath,fl.ParentPath
-	       	      from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_NodeAssociation KINA,#FinalLeaves fl
+	       select KINA.ID,fl.ParentPath
+	       	      from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_NodeAssociation KINA,#FinalLeavesUParent fl
 	       	      where KINA.KPITypeID = @HierarchyID and KPIIndustryTemplateID = @KPIIndustryTemplateID
 		      	    and KINA.Description = fl.ParentPath
 	 ) x
@@ -61,10 +63,13 @@ BEGIN
 	 when matched then
 	      update set NodeAssociationID = x.ID;
 
-	 -- We reset to Ischecked all existing Records
+	-- Associate the NodeAssociationID to all the FinalLeaves
+	select * into #FinalLeaves2 from (select fl.*,flu.NodeAssociationID from #FinalLeaves fl, #FinalLeavesUParent flu where fl.ParentPath = flu.ParentPath) tmp
+
+         -- We reset to Ischecked all existing Records
 	 merge into RainmakerLDCJP_OAT.dbo.RM_KPI_IND_NodeDataItemAssociation KINDA
 	 using (
-		select ID,DataItemID,NodeAssociationID from #FinalLeaves
+		select ID,RM_DataItemID as DataItemID,NodeAssociationID,Sequence from #FinalLeaves2
 	 ) x
 	 on x.DataItemID = KINDA.DataItemID and x.NodeAssociationID = KINDA.NodeAssociationID
 	 when MATCHED then
