@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-04-12 08:52:06 jpdur"
+                       Time-stamp: "2021-04-12 12:00:29 jpdur"
    ------------------------------------------------------------------------------ */
 
 -- @StartCollectionDate 
@@ -24,15 +24,16 @@ BEGIN
       -- set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
       set @CompanyID   = (select ID from CompanyList where Name = @CompanyName)
 
-      -- Create the WorkflowStatusID
+      -- Create the WorkflowStatusID (Default Status In Progress)
       declare @WorkflowStatusID as nvarchar(36)
-      set @WorkflowStatusID = (select ID from RainmakerLDCJP_OAT.dbo.RMX_WorkflowStatus where Name = 'Pending Review')
+      -- set @WorkflowStatusID = (select ID from RainmakerLDCJP_OAT.dbo.RMX_WorkflowStatus where Name = 'Pending Review')
+      set @WorkflowStatusID = (select ID from RainmakerLDCJP_OAT.dbo.RMX_WorkflowStatus where Name = 'In Progress')
 
       -- Create the Category ID
       declare @KPICategoryID as nvarchar(36)
       set @KPICategoryID = (select ID from RainmakerLDCJP_OAT.dbo.RMX_KPICategory where Name = 'Financials')
 
-      -- To Capture the result of the import 
+      -- To Capture the result of the merge
       declare @IDTable  table (                                
       	      [ID] [nvarchar](36) NOT NULL
       )

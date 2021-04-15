@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-04-06 10:21:15 jpdur"
+                       Time-stamp: "2021-04-13 08:37:47 jpdur"
    ------------------------------------------------------------------------------ */
 
 -- Objective is to upload all the datapoints corresponding to a series/Collection i.e.
@@ -45,112 +45,86 @@ BEGIN
       declare @IndustryID as nvarchar(36)
       declare @KPIIndustryTemplateID as varchar(36)
       set @IndustryID  = (select ID from IndustryList where Name = @IndustryName )
-      set @KPIIndustryTemplateID  = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPIIndustryTemplate where IndustryID = @IndustryID )
+      set @KPIIndustryTemplateID  = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template where IndustryID = @IndustryID )
 
       declare @CompanyID as nvarchar(36)
-      declare @KPICompanyConfigurationID as nvarchar(36)
+      declare @KPICompanyTemplateID as nvarchar(36)
       -- set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
       set @CompanyID   = (select ID from CompanyList where Name = @CompanyName)
-      set @KPICompanyConfigurationID = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPICompanyConfiguration where CompanyID = @CompanyID )
+      set @KPICompanyTemplateID = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template where CompanyID = @CompanyID )
 
       -- Determine the StartMonthCollectionDate
       declare @StartMonthCollectionDate as date 
       set @StartMonthCollectionDate = DATEADD(DAY, 1, EOMONTH(@CollectionDate, -1))
 
-      -- Determine the Workflow ID - currently supposed to have been created
-      declare @WorkflowID as nvarchar(36)
-      set @WorkflowID = (select ID from RainmakerLDCJP_OAT.dbo.RM_Workflow 
-                     where CompanyID in (select ID from RainmakerLDCJP_OAT.dbo.RM_Company where InvCompanyName = @CompanyName) 
-                          and KPICategoryID in (select ID from RainmakerLDCJP_OAT.dbo.RMX_KpiCategory where Name = 'Financials')
-						  and EffectiveDate = @StartMonthCollectionDate)
+      -- Determine the Workflow ID - created if required 
+      declare @WorkflowID  as nvarchar(36)
+      declare @NewWorkflow as int
+      EXEC STG_DIA_Populate_RM_Workflow @HierarchyName, @IndustryName, @CompanyName, @StartMonthCollectionDate, @ScenarioName, @WorkflowID OUTPUT,@NewWorkflow OUTPUT
 
-      -- Capture the KPICollectionBatchID
-      declare @KPICollectionBatchID as nvarchar(36)
-      set @KPICollectionBatchID = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Batch where ReportingDate = @CollectionDate
-      	  and KPITypeID in (select ID from RainmakerLDCJP_OAT.dbo.RMX_KpiType where Name = @HierarchyName)
-	  and CompanyID in (select ID from RainmakerLDCJP_OAT.dbo.RM_Company where InvCompanyName = @CompanyName) 
-	  and ScenarioTypeId in (select ID from RainmakerLDCJP_OAT.dbo.RM_ClassType where Name = @ScenarioName)
-	  and WorkflowID in (select ID from RainmakerLDCJP_OAT.dbo.RM_Workflow 
-                          where CompanyID in (select ID from RainmakerLDCJP_OAT.dbo.RM_Company where InvCompanyName = @CompanyName) 
-                          and KPICategoryID in (select ID from RainmakerLDCJP_OAT.dbo.RMX_KpiCategory where Name = 'Financials')
-						  and EffectiveDate = @StartMonthCollectionDate)
-	  and BatchStatusID in (select ID from RainmakerLDCJP_OAT.dbo.RMX_BatchStatus where Name = 'Draft')
-	  and CollectionPeriodId in (select ID from RainmakerLDCJP_OAT.dbo.RMX_CollectionPeriod where Name = 'Monthly'))
+	  -- Capture the KPICollectionBatchID - create it if necessary
+      declare @KPICollectionBatchID  as nvarchar(36)
+      declare @NewKPICollectionBatch as int
+      EXEC STG_DIA_Populate_RM_KPI_Collection_Batch @HierarchyName,@IndustryName,@CompanyName,
+						    @CollectionDate,@ScenarioName,
+						    -- OUTPUT Parameters 
+						    @KPICollectionBatchID OUTPUT,@NewKPICollectionBatch OUTPUT
+
+	 -- --------------------------------------------------------------------------
+         -- Step 0 Delete all the structure for the given batch --> Insert directly
+	 -- --------------------------------------------------------------------------
+	 EXEC STG_DIA_Delete_DataPoints @WorkflowID
+	 
+	 -- -------------------------------------------------
+         -- Step 1 CMP_NodeAssociation -> Collection_Node
+	 -- -------------------------------------------------
 
 	  -- Extract based on the company config the list of Nodes to be processed
-	  select *,NEWID() as KPICollectionNodeID,NEWID() as KPIParentCollectionNodeID
+	  select *,NEWID() as KPICollectionNodeID
 	  	 into #ListNodes
-	  from RainmakerLDCJP_OAT.dbo.RM_KPICompanyConfigNodeAssociation
-	  where KPICompanyConfigurationID = @KPICompanyConfigurationID and isChecked = 1
+	  from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeAssociation
+	  where KPICompanyTemplateID = @KPICompanyTemplateID and isChecked = 1
 
-	  -- Now let's process in fixed 3 stages, it should actually be a loop
-	  select * into #TopNodes from #ListNodes where NodeID in (select ID from RainmakerLDCJP_OAT.dbo.RM_Node where ParentNodeId is null)
-	  update #ListNodes set KPIParentCollectionNodeID = null where NodeId in (select NodeID from #TopNodes)
-
-	  -- Let's process to the next level 
-	  select l1.*,l0.KPICollectionNodeID as ActualParent into #Level1Nodes
-	  	 from #ListNodes l1,RainmakerLDCJP_OAT.dbo.RM_Node r1 ,#TopNodes l0
-	  where l1.NodeID = r1.ID and r1.ParentNodeID = l0.NodeID
-
-	  merge into #ListNodes as target
-	  using (
-	  	select * from #Level1Nodes
-	  ) x
-	  on x.NodeID = target.NodeID
-	  when matched then
-	       update set KPIParentCollectionNodeID = x.ActualParent;
-
-	  -- Let's process to the next level 
-	  select l1.*,l0.KPICollectionNodeID as ActualParent into #Level2Nodes
-	  	 from #ListNodes l1,RainmakerLDCJP_OAT.dbo.RM_Node r1 ,#Level1Nodes l0
-	  where l1.NodeID = r1.ID and r1.ParentNodeID = l0.NodeID
-
-	  merge into #ListNodes as target
-	  using (
-	  	select * from #Level2Nodes
-	  ) x
-	  on x.NodeID = target.NodeID
-	  when matched then
-	       update set KPIParentCollectionNodeID = x.ActualParent;
-
-	  -- Let's process to the next level 
-	  select l1.*,l0.KPICollectionNodeID as ActualParent into #Level3Nodes
-	  	 from #ListNodes l1,RainmakerLDCJP_OAT.dbo.RM_Node r1 ,#Level2Nodes l0
-	  where l1.NodeID = r1.ID and r1.ParentNodeID = l0.NodeID
-
-	  merge into #ListNodes as target
-	  using (
-	  	select * from #Level3Nodes
-	  ) x
-	  on x.NodeID = target.NodeID
-	  when matched then
-	       update set KPIParentCollectionNodeID = x.ActualParent;
-
+	  -- Create the list where the parents have been addead accordingly
+	  select * into #ListNodesWithParents from (
+	  	 select l1.*,lp.KPICollectionNodeID as KPIParentCollectionNodeID
+		 	from #ListNodes l1,#ListNodes lp
+			where l1.ParentNodeAssociationID = lp.ID
+			      and l1.ParentNodeAssociationID is not null 
+	         union
+		 -- Sort out the top level where the parent is null
+		 select l1.*,null as KPIParentCollectionNodeID
+		 	from #ListNodes l1 where ParentNodeAssociationID is null
+	  ) tmp
+	  
 	  -- Now insert into the destination table step by step if not ==> reference fails
 	  insert into  RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Node
-	  	 select KPICollectionNodeID as ID,@WorkflowID as WorkflowID,NodeID,KPIParentCollectionNodeID,@HierarchyID as KPITypeID,Sequence from #ListNodes where NodeId in (select NodeId from #TopNodes)
-          insert into  RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Node
-	  	 select KPICollectionNodeID as ID,@WorkflowID as WorkflowID,NodeID,KPIParentCollectionNodeID,@HierarchyID as KPITypeID,Sequence from #ListNodes where NodeId in (select NodeId from #Level1Nodes)
-          insert into  RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Node
-	  	 select KPICollectionNodeID as ID,@WorkflowID as WorkflowID,NodeID,KPIParentCollectionNodeID,@HierarchyID as KPITypeID,Sequence from #ListNodes where NodeId in (select NodeId from #Level2Nodes)
-          insert into  RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Node
-	  	 select KPICollectionNodeID as ID,@WorkflowID as WorkflowID,NodeID,KPIParentCollectionNodeID,@HierarchyID as KPITypeID,Sequence from #ListNodes where NodeId in (select NodeId from #Level3Nodes)
-
+	  	 select KPICollectionNodeID as ID,@WorkflowID as WorkflowID,NodeID,KPIParentCollectionNodeID,@HierarchyID as KPITypeID,Sequence from #ListNodesWithParents
+		 
+	 -- -------------------------------------------------------------
+         -- Step 2 CMP_NodeDataItemAssociation -> Collection_DataItems 
+	 -- -------------------------------------------------------------
 
 	 -- Select all the DataItems which have been selected 
-	 select * into #ListDataItems from RainmakerLDCJP_OAT.dbo.RM_KPICompanyConfigNodeDataItemAssociation
-	 	where KPICompanyConfigurationID = @KPICompanyConfigurationID and isChecked = 1
+	 select * into #ListDataItems
+	 	from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeDataItemAssociation
+	 	where NodeAssociationID in (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeAssociation where KPICompanyTemplateID = @KPICompanyTemplateID and isChecked = 1)
+		      and IsChecked = 1
 
          -- To that list we add the KPICollectionNodeId by leveraging the presviously created table #ListNodes
 	 select NEWID() as KPICollectionDataItemID,* into #ListDataItemsLinked from
 	 ( select
 	       l.*,ln.KPICollectionNodeID from #ListDataItems l, #ListNodes ln
-	        where ln.ID = l.KPICompanyConfigNodeAssociationID
+	        where ln.ID = l.NodeAssociationID
 	 ) as tmp
 
 	 -- Insert into the RM_KPI_Collection_DataItem
 	 insert into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_DataItem
 	 	select KPICollectionDataItemID,KPICollectionNodeID,DataItemId,Sequence from #ListDataItemsLinked
+	 
+	 -- -------------------------------------------------------------
+         -- Step 3 Collection_Dimension (Dimension Not used)
+	 -- -------------------------------------------------------------
 	 
 	 -- As we do not use Attributes/Dimensions
 	 select NEWID() as KPICollectionDimensionID,l.* into #ListDimension from #ListDataItemsLinked l
@@ -159,22 +133,50 @@ BEGIN
 	 insert into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Dimension
 	 	select KPICollectionDimensionID,KPICollectionDataItemID,null as AttributeID, null as ParentKPICollectionDimensionID, 0 as Sequence from #ListDimension
 
-	 -- For the characteristics of the Batch - let's display the actual values that we are looking for
-	 select  dbo.PS_STG_GetDataPointValue_Num(NC.ID, @CompanyID, @ScenarioName, @CollectionDate) as Value,l.*
-	 	 into #ListDataItemsLinkedValue
-	 	 from #ListDimension l, NodeDefCompany NC
-	 where NC.RM_DataItemID = l.DataItemID
+	 -- -------------------------------------------------------------
+         -- Step 4 Add the DataPoints into Collection_Batch_Dimension
+	 -- -------------------------------------------------------------
 
-	 -- select * from #ListDataItemsLinkedValue
+	 -- Extract the Full Path for the Data in #ListDataItemsLinked
+	 select *,dbo.STG_DIA_FullPathName(KPICollectionDimensionID) as FullPath into #ListDimensionWithPath from #ListDimension
 
+	 -- Now we need to use the join with the relevant Data from NodeDef Tables
+         select * into #ListNodesDataItemNames from (
+      	     -- the longest category first
+      	     select ID as STGID,Name,RM_NODE_ID,FullPath,SortOrder as Sequence,'NodeDefIndustry' as Category from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID
+	     union 
+      	     select ID as STGID,Name,RM_NODE_ID,FullPath,SortOrder as Sequence,'NodeDefCompany'  as Category from NodeDefCompany  where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
+	     union 
+      	     select ID as STGID,Name,RM_NODE_ID,FullPath,SortOrder as Sequence,'NodeDef'         as Category from NodeDef         where HierarchyID = @HierarchyID
+         ) tmp
+
+	 -- We now create the list which will join based on the FullPath
+	 select *,convert(decimal(18,7),0.0) as Value into #ListDimensionWithValue from (
+	 	select lp.*,ln.STGID from #ListDimensionWithPath lp,#ListNodesDataItemNames ln
+		where lp.FullPath = ln.FullPath	
+	 ) tmp
+
+	 -- select *,dbo.PS_STG_GetDataPointValue_Num(STGID, @CompanyID, @ScenarioName, @CollectionDate) from #ListDimensionWithValue
+
+	 -- Capture the Data Points into the taable
+	 update #ListDimensionWithValue set Value = convert(decimal(18,7),dbo.PS_STG_GetDataPointValue_Num(STGID, @CompanyID, @ScenarioName, @CollectionDate))
+	 
 	 -- Upload the KPI_Collection_Batch_Dimension with the values captured
 	 -- Id	KPICollectionBatchId	KPICollectionDimensionId	EffectiveDate	Amount	Percentage	Ratio
 	 insert into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Batch_Dimension
-	 	select NEWID() as ID,@KPICollectionBatchID as KPICollectionBatchID, KPICollectionDimensionID,
+		select NEWID() as ID,@KPICollectionBatchID as KPICollectionBatchID, KPICollectionDimensionID,
 		       @CollectionDate as EffectiveDate,Value as Amount,null as Percentage,null as Ratio
-		       from #ListDataItemsLinkedValue
+		       from #ListDimensionWithValue
 
 
+
+
+
+
+
+
+
+-- OLD PART TO BE DELETED at some point 
       -- -- Part 1 Create the Final Leaves intermediate table
       -- select * into #FinalLeaves from (
       -- 	     select * from NodeDefCompany where level = 2 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID

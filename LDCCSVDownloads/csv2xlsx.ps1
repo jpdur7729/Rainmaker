@@ -1,12 +1,12 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-04-08 09:44:20 jpdur"
+#                     Time-stamp: "2021-04-12 17:17:45 jpdur"
 # ------------------------------------------------------------------------------
 
 # Convert csv files to xlsx from LDCCSVDownloads to LDCDownloads
 param(
     [Parameter(Mandatory=$false)] [string] $Exec_Dir = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition),
-    [Parameter(Mandatory=$false)] [string] $DestDirectory = "g:/Rainmaker/LDCDownloads" # Destination Directory and key parameter
+    [Parameter(Mandatory=$false)] [string] $DestDirectory = "g:/Rainmaker/LDCDownloads", # Destination Directory and key parameter
     [Parameter(Mandatory=$false)] [ValidateSet(",","|")] [string] $Delimiter = "|",
     [Parameter(Mandatory=$true)]  [string] $Company, #Required
     [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 - not to be used/knowm
