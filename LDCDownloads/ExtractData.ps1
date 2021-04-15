@@ -1,11 +1,12 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-04-05 07:45:37 jpdur"
+#                     Time-stamp: "2021-04-15 10:26:30 jpdur"
 # ------------------------------------------------------------------------------
 
 
 # v0 - Simple call to all files sharing the same Company/Hierarchy/Scenario
 # v1 - Add the filter to specify only the required period for better control
+# v2 - Create 2 scripts // Script = Data into the STG Table // + UpoadScript 
 
 
 param(
@@ -16,6 +17,7 @@ param(
     [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
     [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
     [Parameter(Mandatory=$false)] [string] $Script = "DataResults.sql",
+    [Parameter(Mandatory=$false)] [string] $UploadScript = "UploadDataResults.sql",
     [Parameter(Mandatory=$false)] [string] $From , # From date in yyyy-mm-dd format 
     [Parameter(Mandatory=$false)] [string] $To = "2100-01-01",   # To  date in yyyy-mm-dd format 
     [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 - not to be used/knowm
@@ -122,6 +124,10 @@ rm ($Script) -ErrorAction SilentlyContinue
 # Delete if it exists the previous script
 rm ./STGUpload.sql -ErrorAction SilentlyContinue
 
+# Create the upload script cmd file 
+rm ($UploadScript) -ErrorAction SilentlyContinue
+touch ($UploadScript)
+
 # Process all files corresponding to the given pattern
 Get-ChildItem -Path $Exec_Dir -Filter $Pattern |
   Foreach-Object {
@@ -143,6 +149,10 @@ Get-ChildItem -Path $Exec_Dir -Filter $Pattern |
 	  # Append to file
 	  $UploadCmd >> STGUpload.sql
 
+	  # EXEC STG_DIA_Upload_DataPoints 'Income Statement' ,'Wood Product Manufacturing (321)','G004','Actuals','31-Oct-2019'
+	  $UploadScriptCmd = "EXEC STG_DIA_Upload_DataPoints '" +$HierarchyName+ "' ,'" + $IndustryName + "','" + $Prefix+$Company + "','" + $ScenarioName + "','" + $DateExtract.ToString('dd-MMM-yyyy')+"'"
+	  $UploadScriptCmd >> ($UploadScript)
+	  
 	  # Create a temporary file to generate the SQL script
 	  $TempFile = New-TemporaryFile
 	  
@@ -159,3 +169,4 @@ Get-ChildItem -Path $Exec_Dir -Filter $Pattern |
 
 # Debug Display the resulting script
 # cat ($Script)
+
