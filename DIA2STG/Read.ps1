@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-04-18 16:31:13 jpdur"
+#                     Time-stamp: "2021-04-18 17:04:52 jpdur"
 # ------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------
@@ -13,11 +13,14 @@
 # Convert csv files to xlsx from LDCCSVDownloads to LDCDownloads
 param(
     [Parameter(Mandatory=$false)] [string] $Exec_Dir = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition),
-    [Parameter(Mandatory=$false)] [string] $DestDirectory = "g:/Rainmaker/LDCDownloads", # Destination Directory and key parameter
+    [Parameter(Mandatory=$false)] [string] $DestDirectory = "g:/Rainmaker/DIA2STG/G004", # Destination Directory if populated
     # [Parameter(Mandatory=$false)] [string] $FileName = "SaasCo-Ref.xlsx",
     [Parameter(Mandatory=$false)] [string] $FileName = "G004-Ref.xlsx",
     [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 - not to be used/knowm
 )
+
+# Create the Destination directory if necessary
+New-Item -ItemType Directory -Force -Path $DestDirectory >>null
 
 # Process all the data within 1 Worksheet
 function ProcessWorksheet ($WorksheetName,$Hierarchy) {
@@ -184,6 +187,7 @@ function ProcessWorksheet ($WorksheetName,$Hierarchy) {
 	# 006_011_PL_AC_2019_06_FIS_Data_Encoded_20210415_154654.xlsx
 	# ----------------------------------------------------------------
 	$FileName = "DIA_"+$Company+"_"+$Hierarchy+"_"+$Scenario+"_"+$Year+"_"+$Month+"_FIS_Data_Encoded"+(Get-Date).ToString("yyyyMMdd_hhmmss")+".xlsx"
+	$FileName = $DestDirectory+"\"+$FileName
 
 	# Save the result into an Excel Spreadsheet for review 
 	$Result1 | Export-Excel -AutoSize -WorksheetName $WorksheetName $FileName
