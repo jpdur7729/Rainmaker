@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-04-18 17:04:52 jpdur"
+#                     Time-stamp: "2021-04-18 20:20:40 jpdur"
 # ------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ param(
 )
 
 # Create the Destination directory if necessary
-New-Item -ItemType Directory -Force -Path $DestDirectory >>null
+New-Item -ItemType Directory -Force -Path $DestDirectory > $null
 
 # Process all the data within 1 Worksheet
 function ProcessWorksheet ($WorksheetName,$Hierarchy) {
