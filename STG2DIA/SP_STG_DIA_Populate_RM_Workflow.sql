@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-04-12 12:00:29 jpdur"
+                       Time-stamp: "2021-04-16 07:28:07 jpdur"
    ------------------------------------------------------------------------------ */
 
 -- @StartCollectionDate 
@@ -59,6 +59,9 @@ BEGIN
      -- Let's capture the 2 parameters
      set @WorkflowID = (select ID from @IDTable)
      set @NewWorkflow = (select case when @WorkflowID = @NEWWorkflowID then 1 else 0 end)
+
+     -- Important to create the WorkflowStatusHistory --> If not Error Messages
+     EXEC STG_DIA_Populate_RM_WorkflowStatushistory @WorkflowID
 
 END
 GO
