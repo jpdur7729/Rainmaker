@@ -34,3 +34,9 @@ truncate table Backup_Collection_Batch_Dimension
 truncate table Backup_Collection_Dimension      
 truncate table Backup_Collection_DataItem       
 truncate table Backup_Collection_Node           
+
+-- Verification that the newly created tables are empty
+select count(*) from Backup_Collection_Batch_Dimension
+select count(*) from Backup_Collection_Dimension      
+select count(*) from Backup_Collection_DataItem       
+select count(*) from Backup_Collection_Node           

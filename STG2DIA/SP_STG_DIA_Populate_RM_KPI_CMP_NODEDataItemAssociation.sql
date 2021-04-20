@@ -42,6 +42,8 @@ BEGIN
 	  where h.NodeDefID = fl0.STGID
       ) tmp
 
+	  -- select 'FinalLeaves',* from #FinalLeaves
+
       -- Mark all existing information as UnChecked
       update RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeDataItemAssociation
 	set IsChecked = 0

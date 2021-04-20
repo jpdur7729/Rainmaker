@@ -57,12 +57,18 @@ BEGIN
       when not MATCHED THEN
       	   INSERT VALUES (NEWID(),ListNodes.Name,@IsSystemDefined,'JPD - Script',@CurrentDateTime);
 
+	  -- select * from #KPIListNodes 
+	  -- select * from #KPIListNodes where Name in (select distinct Name from #ListNodesNames)
+	  -- select * from #KPIListNodes where CreatedOn = @CurrentDateTime
+
       -- Update the list of Nodes accordingly
       merge into #ListNodesNames ListNodes
       using #KPIListNodes KPIListNodes
       on KPIListNodes.Name = ListNodes.Name
       when MATCHED THEN
       	   UPDATE SET RM_NODE_ID = KPIListNodes.ID;
+
+	 -- select 'KPIListNodes',* from #KpiListNodes where CreatedOn = @CurrentDateTime
 
       -- Insert the new records into the RM_KPI_Node table flagged because they all have 
       -- the same CreatedOn value 

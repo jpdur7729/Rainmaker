@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-04-12 08:01:46 jpdur"
+--                     Time-stamp: "2021-04-20 11:09:06 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- Add the Node in RM_KPI_CMP_NodeAssociation
@@ -41,9 +41,11 @@ BEGIN
       	     select ID as STGID,Name,RM_NODE_ID,FullPath,SortOrder as Sequence,'NodeDef'         as Category from NodeDef         where HierarchyID = @HierarchyID
       ) tmp
 
-      -- We filter the nodes only leveraging Hierarchies and dropping Final Leaves
+      -- We filter the nodes only leveraging Hierarchies and dropping Final Leaves and the Nodes
+      -- especially at top level who are NOT in the hierarchy of the company
       select NEWID() as ID,*,NEWID() as ParentNodeAssociationID into #ListNodesNames from
-      	     (select * from #ListNodesDataItemNames where STGID in (select ParentNodeDefID from Hierarchies)) tmp
+--      	     (select * from #ListNodesDataItemNames where STGID in (select ParentNodeDefID from Hierarchies)) tmp
+      	     (select * from #ListNodesDataItemNames where STGID in (select ParentNodeDefID from Hierarchies where NodeDefID in (select STGID from #ListNodesDataItemNames))) tmp
 
       -- ----------------------------------------------------------------------------------------------------------
       -- Unchecked all possible nodes that may have existed previously ==> No delete by principle if some are used
@@ -54,6 +56,9 @@ BEGIN
 
       -- Update the #ListNodesBames in order to be able to reflect the parent ID
       update #ListNodesNames set ParentNodeAssociationID = null where Category = 'NodeDef'
+
+	  -- select '#ListNodesNames',count(*) from #ListNodesNames
+	  -- select * from #ListNodesNames
 
       -- Update the list with the reference of the parent
       merge into #ListNodesNames LNM
@@ -66,6 +71,16 @@ BEGIN
       when matched then
       	   update set ParentNodeAssociationID = x.ParentNodeAssociationID;
 
+	-- print @KPICompanyTemplateID
+    -- print @HierarchyID
+
+	--select ID,ParentNodeAssociationID,RM_Node_ID as NodeID,@IsChecked as IsChecked,
+	-- 	@HierarchyID as KPITypeID,@KPICompanyTemplateID as KPICompanyTemplateID,
+	--	FullPath as Description,Name as NodeAlias,Sequence,1 as Weight, 
+	--	'Script JPD' as CreatedBy,getdate() as CreatedOn,Category
+	-- from #ListNodesNames
+
+
       -- Add the Nodes accordingly
       merge into RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeAssociation KCNA
       using (
@@ -73,10 +88,10 @@ BEGIN
 	 	@HierarchyID as KPITypeID,@KPICompanyTemplateID as KPICompanyTemplateID,
 		FullPath as Description,Name as NodeAlias,Sequence,1 as Weight, 
 		'Script JPD' as CreatedBy,getdate() as CreatedOn
-	 from #ListNodesNames
+	 from #ListNodesNames 
       ) x
-      on x.Description = KCNA.Description
-      when matched AND KCNA.KPICompanyTemplateID = @KPICompanyTemplateID and KCNA.KPITypeID = @HierarchyID then
+      on x.Description = KCNA.Description AND KCNA.KPICompanyTemplateID = x.KPICompanyTemplateID and KCNA.KPITypeID = x.KPITypeID
+      when matched then
       	   update set IsChecked = 1
       when not matched then
       	   insert (  ID,  ParentNodeAssociationID,  NodeID,  IsChecked,  KPITypeID,  KPICompanyTemplateID,  Description,  NodeAlias,  Sequence,  Weight,  CreatedBy,  CreatedOn)

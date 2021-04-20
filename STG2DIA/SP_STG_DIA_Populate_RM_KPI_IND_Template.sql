@@ -1,9 +1,9 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-04-11 18:14:37 jpdur"
+--                     Time-stamp: "2021-04-20 07:05:24 jpdur"
 -- ------------------------------------------------------------------------------
 
-CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_IND_Template] ( @IndustryName as varchar(100) )
+CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_IND_Template6] ( @IndustryName as varchar(100) )
 as
 BEGIN
 
