@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-04-20 12:06:21 jpdur"
+                       Time-stamp: "2021-04-21 08:47:35 jpdur"
    ------------------------------------------------------------------------------ */
 
 -- We assume that the Collection_Batch_Dimension has been populated
@@ -68,119 +68,76 @@ BEGIN
 	 select * into #ListCollectionDimension from (select * from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Dimension       where KPICollectionDataItemID  in (select ID from #ListCollectionDataItem )) tmp
 	 select * into #ListCollectionValues    from (select * from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Batch_Dimension where KPICollectionDimensionID in (select ID from #ListCollectionDimension)) tmp
 
-	 -- We add the fullpath to all the data previously Identified
-	 select *,dbo.STG_DIA_FullPathName(KPICollectionDimensionID) as FullPath into #UpdatedList from #ListCollectionValues
+	 -- Prepare the mapping to be done 
+	 DECLARE @tab table (ColNum int, Name varchar(200),ID varchar(36),FullPath varchar(1000),Category varchar(100))
+
+	 -- Generate a table in order to process the mapping 
+	 insert INTO @tab  
+	 EXEC Mapping @HierarchyName, @IndustryName, @CompanyName, @StartMonthCollectionDate,@ScenarioName
+
+	 -- Debug only - do not delete
+	 select * from @Tab
+
+	 select 'Nb Records',count(*) from #ListCollectionValues
+
+	 -- We have now brought together the data
+	 select * into #Step1 from (select lcv.*,lcd.KPICollectionNodeID,lcd.DataItemID from #ListCollectionValues lcv,#ListCollectionDimension lcdim,#ListCollectionDataItem lcd
+	 	       	       	    	    where lcv.KPICollectionDimensionID = lcdim.ID and lcd.ID = lcdim.KPICollectionDataItemID) tmp
+
+	 select 's1',* from #Step1
+
+	 select * into #Step2 from (select Name as NameDataItem,s1.* from RainmakerLDCJP_OAT.dbo.RM_DataItem RDI,#Step1 s1 where s1.DataItemID = RDI.ID) tmp
+
+	 select 's2',* from #Step2
+
+	 select *,replicate('z',1500) as CompletePath into #Step3 from (select s2.*,tab.ColNum,tab.FullPath,tab.Category from #Step2 s2,@tab tab where s2.KPICollectionNodeID = tab.ID) tmp
+	 update #Step3 set CompletePath = FullPath+'/'+NameDataItem
+
+	 -- Now Step3 has the uniquely identified path corresponding to the value and we can
+	 -- prepare a merge in order to 
 
 	 -- We now update the list with the selectted list
-	 merge into #UpdatedList updlist
+	 merge into #Step3 updlist
 	 using (
 	       select FullPath,Value from #ListDataItemsWithValues
 	 ) x
-	 on x.FullPath = updlist.FullPath
+	 on x.FullPath = updlist.CompletePath
 	 when matched then
 	      update set Amount = x.Value;
 
-	 select * from #UpdatedList
+	 select * from #Step3
 
-	 -- We now update the RM_KPI_Collection_Batch_Dimension
-	  merge into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Batch_Dimension KCBD
-	  using #UpdatedList x
-	  on x.ID = KCBD.ID
-	  when matched then
-	       update set Amount = x.Amount;
+	  -- We now update the RM_KPI_Collection_Batch_Dimension
+	   merge into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Batch_Dimension KCBD
+	   using #Step3 x
+	   on x.ID = KCBD.ID
+	   when matched then
+	        update set Amount = x.Amount;
 
 
-	 -- -- We now create the list which will join based on the FullPath
-	 -- select *,convert(decimal(18,7),0.0) as Value into #ListDimensionWithValue from (
-	 -- 	select lp.*,ln.STGID from #ListDimensionWithPath lp,#ListNodesDataItemNames ln
-	 -- 	where lp.FullPath = ln.FullPath	
-	 -- ) tmp
+-- Previous Version
+	 -- -- We add the fullpath to all the data previously Identified
+	 -- select *,dbo.STG_DIA_FullPathName(KPICollectionDimensionID) as FullPath into #UpdatedList from #ListCollectionValues
 
-	 -- -- select *,dbo.PS_STG_GetDataPointValue_Num(STGID, @CompanyID, @ScenarioName, @CollectionDate) from #ListDimensionWithValue
+	 -- -- We now update the list with the selectted list
+	 -- merge into #UpdatedList updlist
+	 -- using (
+	 --       select FullPath,Value from #ListDataItemsWithValues
+	 -- ) x
+	 -- on x.FullPath = updlist.FullPath
+	 -- when matched then
+	 --      update set Amount = x.Value;
 
-	 -- -- Capture the Data Points into the taable
-	 -- update #ListDimensionWithValue set Value = convert(decimal(18,7),dbo.PS_STG_GetDataPointValue_Num(STGID, @CompanyID, @ScenarioName, @CollectionDate))
-	 
-	 -- -- Upload the KPI_Collection_Batch_Dimension with the values captured
-	 -- -- Id	KPICollectionBatchId	KPICollectionDimensionId	EffectiveDate	Amount	Percentage	Ratio
-	 -- insert into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Batch_Dimension
-	 -- 	select NEWID() as ID,@KPICollectionBatchID as KPICollectionBatchID, KPICollectionDimensionID,
-	 -- 	       @CollectionDate as EffectiveDate,Value as Amount,null as Percentage,null as Ratio
-	 -- 	       from #ListDimensionWithValue
+	 -- select * from #UpdatedList
+
+	 -- -- We now update the RM_KPI_Collection_Batch_Dimension
+	 --  merge into RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Batch_Dimension KCBD
+	 --  using #UpdatedList x
+	 --  on x.ID = KCBD.ID
+	 --  when matched then
+	 --       update set Amount = x.Amount;
+
+-- End Previous version 
 
 END
 GO
-
-
-
-
-
-
-
--- OLD PART TO BE DELETED at some point 
-      -- -- Part 1 Create the Final Leaves intermediate table
-      -- select * into #FinalLeaves from (
-      -- 	     select * from NodeDefCompany where level = 2 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
-      -- 	     union 
-      -- 	     select * from NodeDefCompany where level = 1 and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
-      -- 	     	      and ID not in (select ParentNodeDefID from Hierarchies) 
-      -- ) as tmp
-
-      -- -- Part 2 create the list of the RM_NODE_ID for the Parents of the FinalLeaves
-      -- select * into #ParentNodeIdLIST from (
-      -- 	     select NC.RM_Node_ID as ParentNodeID,FL.*
-      -- 	     	    from NodeDefCompany NC,Hierarchies,#FinalLeaves FL
-      -- 	     	    where Hierarchies.NodeDefID = FL.ID and NC.ID = Hierarchies.ParentNodeDefID and FL.level = 2
-      -- 	     union 	    	
-      -- 	     select NI.RM_Node_ID as ParentNodeID,FL.*
-      -- 	     	    from NodeDefIndustry NI,Hierarchies,#FinalLeaves FL
-      -- 	     	    where Hierarchies.NodeDefID = FL.ID and NI.ID = Hierarchies.ParentNodeDefID and FL.level = 1
-      -- ) as tmp
-
-      -- 	  select @HierarchyID as KPITypeID,@WorkflowID as WorkflowID,@KPICollectionBatchID as KPICollectionBatchID,* from #ParentNodeIdLIST 
-      -- 	  RETURN
-
-      -- -- Extract the list of the KPICollectionNodeID for the Parent of DataItem ID
-      -- select * into #KPIParentCollectionNode from (
-      -- 	     select KCN.ID as KPICollectionNodeIDParentDataItem, PL.* 
-      -- 		        from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Node KCN,#ParentNodeIdLIST PL
-      -- 	     	    where KCN.NodeID = PL.ParentNodeID and KPITypeID = @HierarchyID and WorkflowID = @WorkflowID
-      -- 	  ) as tmp
-
-      -- 	  select 'KPIParentCollectionNode',* from #KPIParentCollectionNode 
-
-      -- 	  --RETURN
-
-      -- -- Extract the list of the IDs from Collection_DataItem
-      -- select * into #KPICollectionNodeDataItem from (
-      -- 	     select KCDI.ID as KPICollectionNodeDataItemID,KCN.*
-      -- 	     	    from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_DataItem KCDI,#KPIParentCollectionNode KCN
-      -- 	     	    where KCDI.DataItemID = KCN.RM_DataItemID and KCDI.KPICollectionNodeID = KCN.KPICollectionNodeIDParentDataItem
-      -- ) as tmp
-
-      -- 	  select 'KPICollectionNodeDataItem ',* from #KPICollectionNodeDataItem 
-
-      -- -- Extract the list of the IDs from Collection_Dimension
-      -- select * into #KPICollectionDimension from (
-      -- 	     select KCDI.ID as KPICollectionDimensionID,KCNDI.*
-      -- 	     	    from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_DataItem KCDI,#KPICollectionNodeDataItem KCNDI
-      -- 	     	    where KCDI.KPICollectionNodeID = KCNDI.KPICollectionNodeDataItemID
-      -- ) as tmp
-
-      -- 	 select @KPICollectionBatchID as CollectionBatchID,* from #KPICollectionDimension
-
-      -- -- Extract the list of the IDs from Collection_Batch_Dimension
-      -- select * into #KPICollectionBatchDimension from (
-      -- 	     select KCBD.ID as KPICollectionBatchDimensionID,KCD.*
-      -- 	     from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Batch_Dimension KCBD,#KPICollectionDimension KCD
-      -- 	      where KCBD.KPICollectionDimensionID = KCD.KPICollectionDimensionID
-      -- 	     	   and KPICollectionBatchID = @KPICollectionBatchID
-      -- 		   and EffectiveDate = @CollectionDate
-      -- ) as tmp 
-
-      -- -- Extract the data from the KPI_Collection_Batch_Dimension
-      -- select * from #KPICollectionBatchDimension
-
-
-
-

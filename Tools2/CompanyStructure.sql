@@ -68,3 +68,79 @@ GO
 ---- Only select the available nodes
 --select * from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_NodeAssociation where KPITypeId in (select ID from HierarchyList where Name = 'Income Statement')
 --and KPIIndustryTemplateID in (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template where IndustryID in (select ID from IndustryList where Name = 'Warehousing and Storage (493)'))
+
+-- EXEC STG_DIA_Upload_DataPoints 'Income Statement' ,'Warehousing and Storage (493)','G006','Actuals','31-Oct-2020'
+EXEC STG_DIA_UPDATE_DataPoints 'Income Statement' ,'Warehousing and Storage (493)','G006','Actuals','31-Jan-2019'
+
+---- select * from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Node where KPITypeID = @KPITypeID and WorkflowID = @WorkflowID 
+--select * from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_DataItem
+--select * from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Dimension
+--select * from RainmakerLDCJP_OAT.dbo.RM_KPI_Collection_Batch_Dimension
+
+
+--(1 row affected)
+
+--(1 row affected)
+
+--(1 row affected)
+
+--(1 row affected)
+
+--(1 row affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(0 rows affected)
+
+--(1906 rows affected)
+
+--(1906 rows affected)
+
+--(1906 rows affected)
+
+--(1294 rows affected)
+
+--(1294 rows affected)
+
+--(1294 rows affected)
+
+--(1294 rows affected)
+
+--(1294 rows affected)
+
+--(1294 rows affected)
+
+--(24 rows affected)
+
+--(9 rows affected)
+
+--(9 rows affected)
+
+--(9 rows affected)
+
+--Completion time: 2021-04-20T06:18:25.6407307-04:00
+
+select count(*) from Backup_Collection_Batch_Dimension where Timestamp > getdate() -1
+select count(*) from Backup_Collection_Dimension       where Timestamp > getdate() -1
+select count(*) from Backup_Collection_DataItem        where Timestamp > getdate() -1
+select count(*) from Backup_Collection_Node            where Timestamp > getdate() -1
