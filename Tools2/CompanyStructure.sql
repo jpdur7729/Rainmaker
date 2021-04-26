@@ -30,7 +30,7 @@ EXEC STG_DIA_Populate_RM_KPI_CMP_Template @IndustryName, @CompanyName, '1-Jan-20
 EXEC STG_DIA_Populate_RM_KPI_CMP_RecurrenceScenarioAssociation @IndustryName, @CompanyName
 
 -- Clear the structure to simplify the import process 
-EXEC PS_Clear_CompanyStructure 'Income Statement','Warehousing and Storage (493)','G006'
+EXEC PS_Clear_CompanyStructure @HierarchyName,@IndustryName,@CompanyName
 
 -- Create the Node Industry Association 
 EXEC STG_DIA_RM_KPI_IND_NodeAssociation @HierarchyName,@IndustryName
@@ -48,6 +48,12 @@ END
 GO
 
 -- EXEC PS_Populate_CompanyStructure 'Income Statement','Warehousing and Storage (493)','G006'
+
+-- EXEC PS_Populate_CompanyStructure 'Income Statement','Telecommunications (517)','G011'
+-- EXEC PS_Populate_CompanyStructure 'Balance Sheet','Telecommunications (517)','G011'
+
+-- EXEC PS_Populate_CompanyStructure 'Income Statement','Utilities (221)','F0004'
+-- EXEC PS_Populate_CompanyStructure 'Balance Sheet','Utilities (221)','F0004'
 
 --EXEC PS_Clear_CompanyStructure 'Income Statement','Warehousing and Storage (493)','G006'
 --EXEC STG_DIA_RM_KPI_IND_NodeAssociation 'Income Statement','Warehousing and Storage (493)'
@@ -144,3 +150,21 @@ select count(*) from Backup_Collection_Batch_Dimension where Timestamp > getdate
 select count(*) from Backup_Collection_Dimension       where Timestamp > getdate() -1
 select count(*) from Backup_Collection_DataItem        where Timestamp > getdate() -1
 select count(*) from Backup_Collection_Node            where Timestamp > getdate() -1
+
+
+--select * from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_NodeAssociation where KPITypeId in (select ID from HierarchyList where Name = 'Balance Sheet')
+--and KPIIndustryTemplateID in (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template where IndustryID in (select ID from IndustryList where Name = 'Warehousing and Storage (493)'))
+
+select * from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeAssociation where KPITypeId in (select ID from HierarchyList where Name = 'Balance Sheet')
+ and KPICompanyTemplateID in (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template where CompanyID in (select ID from CompanyList where Name = 'G006'))
+
+select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeAssociation where KPITypeId in (select ID from HierarchyList where Name = 'Balance Sheet')
+ and KPICompanyTemplateID in (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template where CompanyID in (select ID from CompanyList where Name = 'G006'))
+ and ParentNodeAssociationId is null
+
+select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeAssociation where KPITypeId in (select ID from HierarchyList where Name = 'Balance Sheet')
+ and KPICompanyTemplateID in (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template where CompanyID in (select ID from CompanyList where Name = 'G006'))
+ and ParentNodeAssociationId in (
+'AD03D473-F152-4161-B5D0-53B42C87CD57',
+'07ECE713-95B6-443A-9A3E-6E5818C047D9',
+'96C3CD0E-597F-47CC-99A0-AE00640485FE')

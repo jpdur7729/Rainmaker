@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-04-23 12:35:06 jpdur"
+#                     Time-stamp: "2021-04-26 10:08:19 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -40,7 +40,7 @@ function DetermineNbMonth ($StartDate,$EndDate) {
     $NbMonth = ($EndYear - $StartYear)*12 + ($EndMonth - $StartMonth)
 
     # Return the Nb of Months
-    $NbMonth
+    [math]::Min($NbMonth,3)
 }
 
 function DetermineLetter ($StartDate,$EndDate) {
@@ -433,8 +433,8 @@ Set-ExcelColumn -Worksheet $ws -Column $ColumnNumber -AutoSize
 # Closes the data and recalculate
 Close-ExcelPackage $excel -Calculate
 
-# Just show the Excel spreadsheet
-Export-Excel -Show $Result
+# Just show the Excel spreadsheet for debug purposes
+# Export-Excel -Show $Result
 
 # # Create the new spreadsheet 
 # $excel = $data | Export-Excel -AutoSize -AutoFilter -WorksheetName Data $Result -PassThru

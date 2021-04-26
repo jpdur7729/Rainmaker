@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-04-11 11:22:36 jpdur"
+--                     Time-stamp: "2021-04-26 14:02:51 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -26,8 +26,8 @@ if @BottomLevelName is not null and len(@BottomLevelName) <> 0 begin
 
       merge into Hierarchies using (
       	    select
-	    (select ID from NodeDefCompany  where Name = @TopLevelName    and Level = 1 and ParentLevelName = @GrandParentName 	and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyId) as ParentNodeDefID,
-	    (select ID from NodeDefCompany  where Name = @BottomLevelName and Level = 2 and ParentLevelName = @TopLevelName 	and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyId) as NodeDefID
+	    (select ID from NodeDefCompany  where Name = @TopLevelName    and Level = 1 and ParentLevelName = @GrandParentName 	and HierarchyID = @HierarchyID               and IndustryID = @IndustryID and CompanyID = @CompanyId) as ParentNodeDefID,
+	    (select ID from NodeDefCompany  where Name = @BottomLevelName and Level = 2 and ParentLevelName = @TopLevelName 	and GrandParentLevelName =  @GrandParentName and HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyId) as NodeDefID
 	    ) x
 	    on x.ParentNodeDefID = Hierarchies.ParentNodeDefID and x.NodeDefID = Hierarchies.NodeDefID
 	    when not matched then
