@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-04-26 13:47:18 jpdur"
+#                     Time-stamp: "2021-05-02 08:27:52 jpdur"
 # ------------------------------------------------------------------------------
 
 # Modified Monday, 26. April 2021 - 011 - structure - Income Statement/Direct/A/B and Statement/Indirect/A/B
@@ -13,15 +13,26 @@ param(
     [Parameter(Mandatory=$false)] [string] $Result = "Results.xlsx",
     [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
     [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
+    [Parameter(Mandatory=$false)] [switch] $Keep,
     [Parameter(Mandatory=$false)] [ValidateSet("runSQL","GenerateSQLScript")] [string] $Action = "GenerateSQLScript",
     [Parameter(Mandatory=$false)] [ValidateSet("StructureOnly","DataPointOnly","All")] [string] $Scope = "StructureOnly",
     [Parameter(Mandatory=$false)] [ValidateSet("Top","Industry","Company")] [string] $HierarchyLevel = "Company",
+    [Parameter(Mandatory=$false)] [string] $UploadScript = "UploadDataResults.sql",
+    [Parameter(Mandatory=$false)] [string] $LogFile,
     [Parameter(Mandatory=$false)] [string] $Script = "Results.sql",
     [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 - not to be used/knowm
 )
 
-# Execution is done from the directory of the script ==> relative paths are thus possible
-cd $Exec_Dir
+# Call the common library of all the different modules 
+$SourceModule = $Exec_Dir+"/RainmakerLib"
+Import-module -Force -Name ($SourceModule)
+
+# ------------------------------------------------------------
+# Execution is done within the directory where the script it called 
+# that way it gives easy access to the data files to be processed
+# ------------------------------------------------------------
+# $Exec_Dir is the actual directory where the script is found 
+# ------------------------------------------------------------
 
 # Create a temporary file to generate the SQL script
 $TempFile = New-TemporaryFile 
@@ -48,20 +59,26 @@ function Execute-SQLColumn($data,$SQLQuery){
     $data | select -skip 1 | ForEach-Object {
 	$_."$SQLQuery",$SQLQuery,$HierarchyLevel
 	if ($_."$SQLQuery".length -ne 0) {
-	    if ($Action -eq "runSQL") {
-		$data_query1 = Invoke-DbaQuery -SqlInstance $DatabaseInstance -Database $Database -Query $_."$SQLQuery"
-	    }
 	    # Only generates the top level request
 	    If ( ($HierarchyLevel -eq "Top") -and ($SQLQuery -eq "SQL1") ) {
 		$SQLQuery + $_."$SQLQuery" | Out-File -Encoding ASCII -Append $TempFile
+		if ($Action -eq "runSQL") {
+		    $data_query1 = Invoke-DbaQueryLog -SqlInstance $DatabaseInstance -Database $Database -Query $_."$SQLQuery" -Log $LogFile
+		}
 	    }
 	    If ( ($HierarchyLevel -eq "Industry") -and
 		 (($SQLQuery -eq "SQL1") -or ($SQLQuery -eq "SQL2") -or ($SQLQuery -eq "SQL3") -or ($SQLQuery -eq "SQL4"))) {
-		$SQLQuery + $_."$SQLQuery" | Out-File -Encoding ASCII -Append $TempFile
-	    }
+		     $SQLQuery + $_."$SQLQuery" | Out-File -Encoding ASCII -Append $TempFile
+		     if ($Action -eq "runSQL") {
+			 $data_query1 = Invoke-DbaQueryLog -SqlInstance $DatabaseInstance -Database $Database -Query $_."$SQLQuery" -Log $LogFile
+		     }
+		 }
 	    if ($HierarchyLevel -eq "Company") {
-		    # We genertae by default for all Levels
-		    $SQLQuery + $_."$SQLQuery" | Out-File -Encoding ASCII -Append $TempFile
+		# We genertae by default for all Levels
+		$SQLQuery + $_."$SQLQuery" | Out-File -Encoding ASCII -Append $TempFile
+		if ($Action -eq "runSQL") {
+		    $data_query1 = Invoke-DbaQueryLog -SqlInstance $DatabaseInstance -Database $Database -Query $_."$SQLQuery" -Log $LogFile
+		}
 	    }
 	}
 	# Display results if required 
@@ -70,126 +87,107 @@ function Execute-SQLColumn($data,$SQLQuery){
 
 }
 
-# Handling RegExp ie. extracting varaibles setup from string organised as A_B_C_D
-# $str = "A123_B22_Cr_DT"
-# $str = $str.replace('_','#')
-# $str
+# # Handling RegExp ie. extracting varaibles setup from string organised as A_B_C_D
+# # $str = "A123_B22_Cr_DT"
+# # $str = $str.replace('_','#')
+# # $str
 
-# -----------------------------------------------------------------------------
-# Example is extracted from below // lots of examples
-# -----------------------------------------------------------------------------
-# https://devblogs.microsoft.com/powershell/parsing-text-with-powershell-1-3/
-# \w	The \w meta character is used to find a word character.
-#         A word character is a character from a-z, A-Z, 0-9,
-#         including the _ (underscore) character. 
-# -----------------------------------------------------------------------------
-# From the observation above the idea of replacing _ by #
-# and more generaly to replace any known separator with #
-# -----------------------------------------------------------------------------
-# # Use regular expresion to extract Expressions
-# $firstLastPattern = "^(?<first>\w+)#(?<second>\w+)#(?<third>\w+)#(?<fourth>\w+)"
+# # -----------------------------------------------------------------------------
+# # Example is extracted from below // lots of examples
+# # -----------------------------------------------------------------------------
+# # https://devblogs.microsoft.com/powershell/parsing-text-with-powershell-1-3/
+# # \w	The \w meta character is used to find a word character.
+# #         A word character is a character from a-z, A-Z, 0-9,
+# #         including the _ (underscore) character. 
+# # -----------------------------------------------------------------------------
+# # From the observation above the idea of replacing _ by #
+# # and more generaly to replace any known separator with #
+# # -----------------------------------------------------------------------------
+# # # Use regular expresion to extract Expressions
+# # $firstLastPattern = "^(?<first>\w+)#(?<second>\w+)#(?<third>\w+)#(?<fourth>\w+)"
+# # $str |
+#   #   Select-String -Pattern $firstLastPattern |
+#   #   Foreach-Object {
+# #       # here we access the groups by name instead of by index
+# #       $first, $second, $third, $fourth = $_.Matches[0].Groups['first', 'second', 'third', 'fourth'].Value
+# #       [PSCustomObject] @{
+# #           FirstName = $first
+# #           LastName = $second
+# #           Handle = $third
+# #           TwitterFollowers = $fourth
+# #       }
+# #   }
+
+# # Use only # as separators
+# # Any other possible space  - in the name of the company - are replaced by XYZ
+# $str = $Source.replace('_','#').replace(' ','XYZ')
+
+# # Pattern to read the file name
+# # $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Output>\w+)#(?<Number1>\w+)#(?<FIS>\w+)#(?<Company>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
+# $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Company>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<FIS>\w+)#(?<DataStr>\w+)#(?<Encoded>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
+# $firstLastPattern
+
 # $str |
-  #   Select-String -Pattern $firstLastPattern |
-  #   Foreach-Object {
+#   Select-String -Pattern $firstLastPattern |
+#   Foreach-Object {
 #       # here we access the groups by name instead of by index
-#       $first, $second, $third, $fourth = $_.Matches[0].Groups['first', 'second', 'third', 'fourth'].Value
+#       # $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
+#       # 002_004_PL_AC_2020_07_FIS_Data_Encoded_20210315_170913.xlsx
+#       $BatchNumber, $Company, $Hierarchy, $Scenario, $Year, $Month, $FIS, $DataStr, $Encoded, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Company', 'Hierarchy', 'Scenario', 'Year', 'Month', 'FIS', 'DataStr', 'Encoded', 'CreationDate', 'UnknownNumber', 'extension'].Value
 #       [PSCustomObject] @{
-#           FirstName = $first
-#           LastName = $second
-#           Handle = $third
-#           TwitterFollowers = $fourth
+#           Hierarchy = $Hierarchy
+#           Company  = $Company.replace('XYZ',' ')
+# 	  # Number1 = $Number1
+# 	  # FIS = $FIS
+#           Scenario = $Scenario
+# 	  Year = $Year
+# 	  Month = $Month
+#           Extension = $extension
 #       }
 #   }
 
-# Use only # as separators
-# Any other possible space  - in the name of the company - are replaced by XYZ
-$str = $Source.replace('_','#').replace(' ','XYZ')
+# Extract the characteristics based on the File Name 
+$Data = ExtractCharacteristics -FileName $Source
 
-# Pattern to read the file name
-# $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Output>\w+)#(?<Number1>\w+)#(?<FIS>\w+)#(?<Company>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
-$firstLastPattern = "^(?<BatchNumber>\w+)#(?<Company>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<FIS>\w+)#(?<DataStr>\w+)#(?<Encoded>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
-$firstLastPattern
-
-$str |
-  Select-String -Pattern $firstLastPattern |
-  Foreach-Object {
-      # here we access the groups by name instead of by index
-      # $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
-      # 002_004_PL_AC_2020_07_FIS_Data_Encoded_20210315_170913.xlsx
-      $BatchNumber, $Company, $Hierarchy, $Scenario, $Year, $Month, $FIS, $DataStr, $Encoded, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Company', 'Hierarchy', 'Scenario', 'Year', 'Month', 'FIS', 'DataStr', 'Encoded', 'CreationDate', 'UnknownNumber', 'extension'].Value
-      [PSCustomObject] @{
-          Hierarchy = $Hierarchy
-          Company  = $Company.replace('XYZ',' ')
-	  # Number1 = $Number1
-	  # FIS = $FIS
-          Scenario = $Scenario
-	  Year = $Year
-	  Month = $Month
-          Extension = $extension
-      }
-  }
-
-# In order to be able to have a Company Name with space they are entered as XYZ
-# Let's reestablish the right elements
+# -------------------------------------------------------------------------------------
 # If the company starts could be understood as a number 004 the user may add a Prefix 
 # quick fix to the 004 situation on 2021-03-21 
-$Company = $Company.replace('XYZ',' ')
-$Company = $Prefix + $Company
+# -------------------------------------------------------------------------------------
+$Company = $Prefix + $Data.Company
+$Year = $Data.Year
+$Month = $Data.Month
+$Hierarchy = $Data.Hierarchy
+$Scenario = $Data.Scenario
 
-# ----------------------------------------------------------------------
-# Normalise the values in the fields in order to get the standard values 
-# ----------------------------------------------------------------------
+# Access the module to extract the Corresponding Industry 
+$Industry = GetIndustry -Company $Company -DatabaseInstance $DatabaseInstance -Database $Database
 
-# Extract the Industry for the given company 
-$query1 = "select Name from IndustryList where ID in (select IndustryID from CompanyList where Name = '"+$Company+"')"
-$data_query1 = Invoke-DbaQuery -SqlInstance $DatabaseInstance -Database $Database -Query $query1
+# Standardise the Hierarchy based on the Code Received 
+$Hierarchy = DecodeHierarchyCode -HierarchyCode $Hierarchy
 
-# Error message or confirmation if needed
-if ($data_query1 -eq $null) {
-    "Company:" + $Company +" is not known"
-}
-else {
-    "Company " + $Company +" belongs to the industry " + $data_query1.Name
-}
+# Standardise the Scenario based on the Code Received 
+$Scenario = DecodeScenarioCode -ScenarioCode $Scenario
 
-# Keep the industry
-$Industry = $data_query1.Name
+# Date - as a Date - which is the last day of the corresponding month 
+$DateasDate = LastDayofMonth -Year $Year -Month $Month
 
-# Normalise the Hierarchy
-switch($Hierarchy)
-{
-    'PL' {$Hierarchy = "Income Statement"}
-    'CF' {$Hierarchy = "Cashflows"}
-    # 'PL' {$Hierarchy = "Profit Loss"}
-    'BS' {$Hierarchy = "Balance Sheet"}
-}
-$Hierarchy
+# # Process the Month and Year and convert them to integer
+# $Month = [int]$Month
+# $Year  = [int]$Year
 
-# Normalise the Scenario
-switch($Scenario)
-{
-    'AC' {$Scenario = "Actuals"}
-    'BD' {$Scenario = "Budget"}
-}
-$Scenario
+# # Determine last day of the month by going to the 1 day of following month 
+# if ($Month -eq 12) {
+#     $Month = 1
+#     $Year++}
+# else{
+#     $Month++
+# }
+# $MonthStr = "{0:00}" -f $Month
+# $DateString = "$Year-$MonthStr-01"
 
-# Process the Month and Year and convert them to integer
-$Month = [int]$Month
-$Year  = [int]$Year
-
-# Determine last day of the month by going to the 1 day of following month 
-if ($Month -eq 12) {
-    $Month = 1
-    $Year++}
-else{
-    $Month++
-}
-$MonthStr = "{0:00}" -f $Month
-$DateString = "$Year-$MonthStr-01"
-
-# Change the string to date in order to be able to later choose the right format
-$DateasDate = [datetime]::ParseExact($DateString,"yyyy-MM-dd", $null)
-$DateasDate = $DateasDate.addDays(-1)
+# # Change the string to date in order to be able to later choose the right format
+# $DateasDate = [datetime]::ParseExact($DateString,"yyyy-MM-dd", $null)
+# $DateasDate = $DateasDate.addDays(-1)
 
 "Stage 1 - Test Here if result file is blocked"
 
@@ -275,7 +273,7 @@ if ($Scope -ne "DataPointOnly") {
     Execute-SQLColumn -data $data -SQLQuery "SQL8"
 }
 
-"Stage 3 - No upload of values"
+"Stage 3 - upload of values depending of $Scope"
 
 # Execute SQL for the actual DataPoint
 if ($Scope -ne "StructureOnly") {
@@ -297,3 +295,12 @@ cat $TempFile | sort | uniq > ($TempFile2)
 rm $TempFile2
 rm $TempFile
 
+# Generate the UploadScript to prepare the upload
+# EXEC PS_Populate_CompanyStructure 'Income Statement','Utilities (221)','F0004'
+$UploadScriptCmd = "EXEC PS_Populate_CompanyStructure '" + $Hierarchy + "' ,'" + $Industry + "','" + $Company + "'"
+$UploadScriptCmd > ($UploadScript)
+	  
+# That way the module is only used as part of the script and no afterwards
+if (!($Keep)) {
+    Remove-Module RainmakerLib
+}

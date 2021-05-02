@@ -1,21 +1,32 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-04-26 10:08:19 jpdur"
+#                     Time-stamp: "2021-05-02 09:19:36 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
     [Parameter(Mandatory=$false)] [string] $Exec_Dir = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition),
     [Parameter(Mandatory=$false)] [string] $Source = "999_G006_PL_AC_2019_01_FIS_Data_Enconded_20210108_2203.xlsx",
     [Parameter(Mandatory=$false)] [string] $Result,
+    [Parameter(Mandatory=$false)] [switch] $Keep, # To keep the module active
     [Parameter(Mandatory=$false)] [string] $Script = "Results.sql",
     [Parameter(Mandatory=$false)] [string] $StartCollectionDate = "2019-01-01",
     [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 - not to be used/knowm
 )
 
-# Execution is done from the directory of the script ==> relative paths are thus possible
-cd $Exec_Dir
+# Call the common library of all the different modules 
+$SourceModule = $Exec_Dir+"/RainmakerLib"
+Import-module -Force -Name ($SourceModule)
 
-# The global variabled used in different places 
+# ------------------------------------------------------------
+# Execution is done within the directory where the script it called 
+# that way it gives easy access to the data files to be processed
+# ------------------------------------------------------------
+# $Exec_Dir is the actual directory where the script is found 
+# ------------------------------------------------------------
+
+# Create a temporary file to generate the SQL script
+$TempFile = New-TemporaryFile 
+
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # This is the line Number which will be used to refer to cell and create the formula
@@ -280,6 +291,19 @@ for( $i=0 ; $i -lt $data.length ; $i++ ) {
 "Contents before creating the formula"
 $newdata | Format-Table
 
+# ------------------------------------------------------------------
+# Handling the specific case of the data not being there 
+# due to the structure of the SQL extract NULL is provided
+# and that null is translated into "" and empty string 
+# as part of the null vs. 0 process we put $null in all the fields
+# ------------------------------------------------------------------
+# Lets Process the data accordingly 
+for( $i=0 ; $i -lt $newdata.length ; $i++ ) {
+    if ($newdata[$i].Amount -eq "") {
+	$newdata[$i].Amount = $null
+    }
+}
+
 # Prepare the formula
 for ($i = 0 ; $i -lt $newdata.length ; $i++) {
 
@@ -526,4 +550,9 @@ Close-ExcelPackage $excel -Calculate
 # # Eliminate the Temporary files
 # rm $TempFile2
 # rm $TempFile
+
+# That way the module is only used as part of the script and no afterwards
+if (!($Keep)) {
+    Remove-Module RainmakerLib
+}
 
