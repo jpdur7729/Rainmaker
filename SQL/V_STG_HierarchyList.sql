@@ -1,8 +1,6 @@
-use [RainmakerLDCJP_OATSTG]
-
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-26 17:09:46 jpdur"
+--                     Time-stamp: "2021-06-15 15:08:42 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- -------------------------------------------------------------------------------------
@@ -27,5 +25,5 @@ GO
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 create or alter VIEW HierarchyList
 as
-	Select Id as ID, Name as Name from RainmakerLDCJP_OAT.dbo.RMX_KpiType 
+	Select Id as ID, Name as Name from DIARMX_KpiType 
 

@@ -1,8 +1,6 @@
-use [RainmakerLDCJP_OATSTG]
-
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-02-26 17:09:55 jpdur"
+--                     Time-stamp: "2021-06-15 15:07:11 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- -------------------------------------------------------------------------------------
@@ -28,5 +26,5 @@ GO
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 create or alter VIEW IndustryList
 as
-	Select Id as ID, InvIndustryName as Name from RainmakerLDCJP_OAT.dbo.RM_Industry
+	Select Id as ID, InvIndustryName as Name from DIARM_Industry
 

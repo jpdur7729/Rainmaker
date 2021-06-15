@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-06-06 12:11:35 jpdur"
+--                     Time-stamp: "2021-06-15 15:07:24 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- -------------------------------------------------------------------------------------------
@@ -16,6 +16,9 @@ BEGIN
 	EXEC STG_DIA_Remove_DIA_Synonyms
 
 	-- Define all the synonyms
+	EXEC STG_DIA_Define_Synonym 'RM_Company', @DBName
+	EXEC STG_DIA_Define_Synonym 'RM_Industry', @DBName
+	
 	EXEC STG_DIA_Define_Synonym 'RMX_BatchStatus', @DBName
 	EXEC STG_DIA_Define_Synonym 'RMX_CollectionPeriod', @DBName
 	EXEC STG_DIA_Define_Synonym 'RMX_CollectionRecurrence', @DBName
