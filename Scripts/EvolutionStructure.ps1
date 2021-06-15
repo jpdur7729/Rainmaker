@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-06-10 07:08:55 jpdur"
+#                     Time-stamp: "2021-06-15 12:49:44 jpdur"
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ param(
     [Parameter(Mandatory=$false)] [string] $Exec_Dir = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition),
     [Parameter(Mandatory=$false)] [string] $Company = "004",
     [Parameter(Mandatory=$false)] [string] [ValidateSet("PL","BS","CF")] [string] $Hierarchy = "PL",
-    [Parameter(Mandatory=$false)] [string] [ValidateSet("AC","BD")]      [string] $Scenario = "AC",
+    [Parameter(Mandatory=$false)] [string] [ValidateSet("AC","BD","OB")] [string] $Scenario = "AC",
     [Parameter(Mandatory=$false)] [string] $Prefix #Quick Fix for company name such as 004 - not to be used/knowm
 )
 

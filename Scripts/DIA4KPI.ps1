@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-06-15 11:52:38 jpdur"
+#                     Time-stamp: "2021-06-15 12:47:27 jpdur"
 # ------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------
@@ -12,10 +12,10 @@
 param(
     [Parameter(Mandatory=$false)] [string] $Exec_Dir = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition),
     [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
-    [Parameter(Mandatory=$false)] [string] [ValidateSet("AC","BD")]  $Scenario = "AC",
+    [Parameter(Mandatory=$false)] [string] [ValidateSet("AC","BD","OB")]  $Scenario = "AC",
     [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
     [Parameter(Mandatory=$false)] [switch] $Keep,
-    [Parameter(Mandatory=$false)] [string] $From = "2018-05-01", # From date in yyyy-mm-dd format 
+    [Parameter(Mandatory=$false)] [string] $From, # From date in yyyy-mm-dd format 
     [Parameter(Mandatory=$false)] [string] $To = "2100-01-01",   # To  date in yyyy-mm-dd format 
     [Parameter(Mandatory=$false)] [string] $Prefix = "" #Quick Fix for company name such as 004 - not to be used/knowm
 )

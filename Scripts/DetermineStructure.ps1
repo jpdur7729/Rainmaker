@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-06-14 13:25:52 jpdur"
+#                     Time-stamp: "2021-06-15 12:48:54 jpdur"
 # ------------------------------------------------------------------------------
 
 
@@ -13,7 +13,7 @@ param(
     [Parameter(Mandatory=$false)] [string] $Exec_Dir = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Definition),
     # [Parameter(Mandatory=$false)] [string] $Company = "004",
     [Parameter(Mandatory=$false)] [string] [ValidateSet("PL","BS","CF")] [string] $Hierarchy = "PL",
-    [Parameter(Mandatory=$false)] [string] [ValidateSet("AC","BD")]      [string] $Scenario = "AC",
+    [Parameter(Mandatory=$false)] [string] [ValidateSet("AC","BD","OB")]      [string] $Scenario = "AC",
     [Parameter(Mandatory=$false)] [string] $DatabaseInstance = "localhost",
     [Parameter(Mandatory=$false)] [string] $Database = "DIA2",
     [Parameter(Mandatory=$false)] [string] $LogFile,
