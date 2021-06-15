@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-06-14 17:03:24 jpdur"
+#                     Time-stamp: "2021-06-15 11:52:38 jpdur"
 # ------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------
@@ -63,9 +63,6 @@ $ListFiles = Get-ChildItem -Filter $Pattern | Where-Object {$_.name -NotLike "DI
 $Data = ExtractCharacteristics -FileName $ListFiles[0].Name
 $From = $Data.Year+"-"+$Data.Month+"-01"
 
-# !!!!!! Force to minimize the process 
-$From = "2020-09-01"
-
 "Key parameters about to be used "
 "--------------------------------"
 "KPI     : " + $HierarchyName + " i.e. " + $Hierarchy
@@ -82,18 +79,18 @@ EvolutionStructure -Company $Company -Scenario $Scenario -Hierarchy $Hierarchy
 
 # !!!!!! to have a quicker testing path
 
-# # -----------------------------------------
-# # Message Poppup documentation 
-# # https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/windows-scripting/x83z1d9f(v=vs.84)?redirectedfrom=MSDN
-# # -----------------------------------------
-# "Check Popup to continue ..."
-# $wshell = New-Object -ComObject Wscript.Shell
-# $result = $wshell.Popup("Check lines",0,"Done",0x1 + 0x20)
+# -----------------------------------------
+# Message Poppup documentation 
+# https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/windows-scripting/x83z1d9f(v=vs.84)?redirectedfrom=MSDN
+# -----------------------------------------
+"Check Popup to continue ..."
+$wshell = New-Object -ComObject Wscript.Shell
+$result = $wshell.Popup("Check lines",0,"Done",0x1 + 0x20)
 
-# # If cancel is chosen then the script is stopped
-# if ($result -ne 1) {
-#     exit
-# }
+# If cancel is chosen then the script is stopped
+if ($result -ne 1) {
+    exit
+}
 
 # ------------------------------------------------------------------------------
 # Part 1 - Extract all the needed data and store it into the local SQL database
@@ -145,8 +142,11 @@ sqlcmd -S ($DatabaseInstance) -d ($Database) -i "DataResults.sql"
 # Part 3 - Extract the data and create/Execute the scripts to store all the DataPoints
 # --------------------------------------------------------------------------------------
 
-# Create the DIA spreadsheets - same parameters as ExtractData 
-CreateDIASpreadsheets -Company $Company -Hierarchy $Hierarchy -Scenario $Scenario -From $From -To $To -Prefix $Prefix 
+# Create the DIA spreadsheets - same parameters as ExtractData - OLD Version
+# CreateDIASpreadsheets -Company $Company -Hierarchy $Hierarchy -Scenario $Scenario -From $From -To $To -Prefix $Prefix 
+
+# New process to create the Full XLAddin Histiry Spreadsheet
+CreateHistory 
 
 # That way the module is only used as part of the script and no afterwards
 # Remove-Module RainmakerLib
