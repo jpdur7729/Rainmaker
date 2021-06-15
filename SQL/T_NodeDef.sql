@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-04-26 13:57:29 jpdur"
+--                     Time-stamp: "2021-06-10 09:10:06 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -51,9 +51,11 @@ createdAt    datetime 		not null, -- Sequelize managed fields
 updatedAt    datetime 		not null, -- Sequelize managed fields
 -------------------------         -- Standard Header
 Name	      varchar(250)  	  NOT NULL, -- DataPoint ID
+Level 	      integer		  NOT NULL, -- Level within a hierarchy
 IndustryID    varchar(36)	  NOT NULL, -- Industry ID
 HierarchyID   varchar(36)	  NOT NULL,  -- Hierarchy ID
-SortOrder     integer		  NOT NULL  DEFAULT 0,
+Port	      varchar(1)	  NOT NULL DEFAULT ' ', -- P if this is to force creating a datapoint for (1,0,0)
+SortOrder     integer		  NOT NULL DEFAULT 0,
 ParentLevelName varchar(250) 	  NOT NULL,
 -- Add this ID to make it unique to idetify the parent without ambiguity
 RM_NODE_ID	UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID() NOT NULL,
@@ -84,6 +86,7 @@ Level		     integer		  NOT NULL, -- Level within a hierarchy
 CompanyID	     varchar(36)	  NOT NULL, -- Company ID
 IndustryID	     varchar(36)	  NOT NULL, -- Industry ID
 HierarchyID	     varchar(36)	  NOT NULL,  -- Hierarchy ID
+Port		     varchar(1)		  NOT NULL DEFAULT ' ', -- P if this is to force creating a datapoint for (1,1,0)
 SortOrder	     integer		  NOT NULL DEFAULT 0,
 ParentLevelName	     varchar(250)	  NOT NULL,
 GrandParentLevelName varchar(250)	  NOT NULL,
@@ -99,3 +102,7 @@ FullPath      varchar(1000) 	 NULL
 CREATE UNIQUE INDEX NodeDefCompany_Unique on NodeDefCompany(Name,Level,CompanyID,IndustryID,HierarchyID,ParentLevelName,GrandParentLevelName)
 GO
 
+-- -- Add column with a non null constraint
+-- Alter Table NodeDefIndustry add Level integer
+-- update NodeDefIndustry set Level = 1
+-- ALTER TABLE NodeDefIndustry ALTER COLUMN level integer NOT NULL

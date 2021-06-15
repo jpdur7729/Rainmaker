@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-05-02 08:27:52 jpdur"
+#                     Time-stamp: "2021-06-14 13:27:02 jpdur"
 # ------------------------------------------------------------------------------
 
 # Modified Monday, 26. April 2021 - 011 - structure - Income Statement/Direct/A/B and Statement/Indirect/A/B
@@ -87,65 +87,6 @@ function Execute-SQLColumn($data,$SQLQuery){
 
 }
 
-# # Handling RegExp ie. extracting varaibles setup from string organised as A_B_C_D
-# # $str = "A123_B22_Cr_DT"
-# # $str = $str.replace('_','#')
-# # $str
-
-# # -----------------------------------------------------------------------------
-# # Example is extracted from below // lots of examples
-# # -----------------------------------------------------------------------------
-# # https://devblogs.microsoft.com/powershell/parsing-text-with-powershell-1-3/
-# # \w	The \w meta character is used to find a word character.
-# #         A word character is a character from a-z, A-Z, 0-9,
-# #         including the _ (underscore) character. 
-# # -----------------------------------------------------------------------------
-# # From the observation above the idea of replacing _ by #
-# # and more generaly to replace any known separator with #
-# # -----------------------------------------------------------------------------
-# # # Use regular expresion to extract Expressions
-# # $firstLastPattern = "^(?<first>\w+)#(?<second>\w+)#(?<third>\w+)#(?<fourth>\w+)"
-# # $str |
-#   #   Select-String -Pattern $firstLastPattern |
-#   #   Foreach-Object {
-# #       # here we access the groups by name instead of by index
-# #       $first, $second, $third, $fourth = $_.Matches[0].Groups['first', 'second', 'third', 'fourth'].Value
-# #       [PSCustomObject] @{
-# #           FirstName = $first
-# #           LastName = $second
-# #           Handle = $third
-# #           TwitterFollowers = $fourth
-# #       }
-# #   }
-
-# # Use only # as separators
-# # Any other possible space  - in the name of the company - are replaced by XYZ
-# $str = $Source.replace('_','#').replace(' ','XYZ')
-
-# # Pattern to read the file name
-# # $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Output>\w+)#(?<Number1>\w+)#(?<FIS>\w+)#(?<Company>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
-# $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Company>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<FIS>\w+)#(?<DataStr>\w+)#(?<Encoded>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
-# $firstLastPattern
-
-# $str |
-#   Select-String -Pattern $firstLastPattern |
-#   Foreach-Object {
-#       # here we access the groups by name instead of by index
-#       # $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
-#       # 002_004_PL_AC_2020_07_FIS_Data_Encoded_20210315_170913.xlsx
-#       $BatchNumber, $Company, $Hierarchy, $Scenario, $Year, $Month, $FIS, $DataStr, $Encoded, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Company', 'Hierarchy', 'Scenario', 'Year', 'Month', 'FIS', 'DataStr', 'Encoded', 'CreationDate', 'UnknownNumber', 'extension'].Value
-#       [PSCustomObject] @{
-#           Hierarchy = $Hierarchy
-#           Company  = $Company.replace('XYZ',' ')
-# 	  # Number1 = $Number1
-# 	  # FIS = $FIS
-#           Scenario = $Scenario
-# 	  Year = $Year
-# 	  Month = $Month
-#           Extension = $extension
-#       }
-#   }
-
 # Extract the characteristics based on the File Name 
 $Data = ExtractCharacteristics -FileName $Source
 
@@ -171,23 +112,6 @@ $Scenario = DecodeScenarioCode -ScenarioCode $Scenario
 # Date - as a Date - which is the last day of the corresponding month 
 $DateasDate = LastDayofMonth -Year $Year -Month $Month
 
-# # Process the Month and Year and convert them to integer
-# $Month = [int]$Month
-# $Year  = [int]$Year
-
-# # Determine last day of the month by going to the 1 day of following month 
-# if ($Month -eq 12) {
-#     $Month = 1
-#     $Year++}
-# else{
-#     $Month++
-# }
-# $MonthStr = "{0:00}" -f $Month
-# $DateString = "$Year-$MonthStr-01"
-
-# # Change the string to date in order to be able to later choose the right format
-# $DateasDate = [datetime]::ParseExact($DateString,"yyyy-MM-dd", $null)
-# $DateasDate = $DateasDate.addDays(-1)
 
 "Stage 1 - Test Here if result file is blocked"
 
@@ -203,6 +127,23 @@ $data = Import-Excel -Path ("./"+$Source) -StartRow 2 -HeaderName $HeaderList
 
 # Add the params Tab 
 @($Hierarchy,$Industry,$Company,$Scenario,$DateasDate.tostring("dd-MMM-yy"))  | Export-Excel -AutoSize -WorksheetName Params $Result
+
+# "-----------------------------------------------------------------------------"
+# "Stage 2 - Check if no data in company level then change the level to Industry"
+# "-----------------------------------------------------------------------------"
+# $NoCompanyData = $true
+
+# # Test for all line if .1 and .2 are actually empty
+# for( $i=0 ; $i -lt $data.length ; $i++ ) {
+#     $NoCompanyData = $NoCompanyData -and ($data[$i]."1".length -eq 0) -and ($data[$i]."2".length -eq 0)
+# }
+
+# if (($HierarchyLevel -eq "Company") -and ($NoCompanyData)) {
+#     $HierarchyLevel = "Industry"
+# }
+
+# # Debug // Check that the data level has been changed 
+# $HierarchyLevel
 
 # Create the new spreadsheet 
 $excel = $data | Export-Excel -AutoSize -AutoFilter -WorksheetName Data $Result -PassThru
@@ -231,13 +172,13 @@ Set-ExcelColumn -Worksheet $ws -Heading "SQL4" -Column 13 -AutoSize -Value {("="
 
 # Levels starting at Company Level
 # ="EXEC PS_STG_CREATE_NODECOMPANY '"&C2&"','"&Params!$A$1&"','"&Params!$A$2&"','"&Params!$A$3&"','"&B2&"',"&H2&","&C$1
-Set-ExcelColumn -Worksheet $ws -Heading "SQL5" -Column 14 -AutoSize -Value {("=""EXEC PS_STG_CREATE_NODECOMPANY '""&C$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&B$row&""' , '""&H$row&""' , '""&C`$1&""' , '""&A$row&""' """) }
+Set-ExcelColumn -Worksheet $ws -Heading "SQL5" -Column 14 -AutoSize -Value {("=""EXEC PS_STG_NEW_CREATE_NODECOMPANY '""&C$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&B$row&""' , '""&H$row&""' , '""&C`$1&""' , '""&A$row&""' """) }
 # =IF(LEN(D2)=0,"","EXEC PS_STG_CREATE_NODECOMPANY '"&D2&"','"&Params!$A$1&"','"&Params!$A$2&"','"&Params!$A$3&"','"&C2&"',"&I2&","&D$1)
 Set-ExcelColumn -Worksheet $ws -Heading "SQL6" -Column 15 -AutoSize -Value {("= IF(LEN(D$row)=0,"""",""EXEC PS_STG_CREATE_NODECOMPANY '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&C$row&""' , '""&I$row&""' , '""&D`$1&""' , '""&B$row&""' "")") }
 # ="EXEC PS_STG_LINK_INDUSTRY_COMPANY '"&B2&"','"&C2&"','"&Params!$A$1&"','"& Params!$A$2&"','"& Params!$A$3&"','"&C2&"'"
-Set-ExcelColumn -Worksheet $ws -Heading "SQL7" -Column 16 -AutoSize -Value {("=""EXEC PS_STG_LINK_INDUSTRY_COMPANY '""&B$row&""' , '""&C$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&A$row&""' """) }
+Set-ExcelColumn -Worksheet $ws -Heading "SQL7" -Column 16 -AutoSize -Value {("= ""EXEC PS_STG_NEW_LINK_INDUSTRY_COMPANY '""&B$row&""' , '""&C$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&A$row&""' """) }
 # ="EXEC PS_STG_LINK_COMPANY_COMPANY '"&C2&"','"&D2&"','"&Params!$A$1&"','"& Params!$A$2&"','"& Params!$A$3&"','"&B2&"'"
-Set-ExcelColumn -Worksheet $ws -Heading "SQL8" -Column 17 -AutoSize -Value {("=""EXEC PS_STG_LINK_COMPANY_COMPANY '""&C$row&""' , '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&B$row&""' """) }
+Set-ExcelColumn -Worksheet $ws -Heading "SQL8" -Column 17 -AutoSize -Value {("= IF(LEN(C$row)=0,"""",""EXEC PS_STG_LINK_COMPANY_COMPANY '""&C$row&""' , '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&B$row&""' "")") }
 
 # Add the data
 # Difficulties to interpret the function text with the parameters

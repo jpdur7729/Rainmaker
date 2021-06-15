@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-04-26 13:32:39 jpdur"
+--                     Time-stamp: "2021-06-14 13:28:03 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -17,7 +17,8 @@ CREATE or ALTER PROCEDURE [dbo].[PS_STG_CREATE_NODECOMPANY](@LevelName as varcha
        @HierarchyName as varchar(100),@IndustryName as varchar(100),@CompanyName as varchar(100),
        @ParentLevelName as varchar(250),
        @SortOrder as integer,@LevelNumber as integer,
-       @GrandParentLevelName as varchar(250))
+       @GrandParentLevelName as varchar(250)
+       )
 as
 BEGIN
 
@@ -29,7 +30,8 @@ set @HierarchyID = (select ID from HierarchyList where Name = @HierarchyName )
 set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
 set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
 
-merge into NodeDefCompany using (
+if len(@LevelName) <> 0 begin
+   merge into NodeDefCompany using (
       select @LevelName as Name, @IndustryID as IndustryID, @HierarchyID as HierarchyID, @CompanyID as CompanyID,@ParentLevelName as ParentLevelName,@GrandParentLevelName as GrandParentLevelName
       ) x
       on x.IndustryID = NodeDefCompany.IndustryID and x.HierarchyID = NodeDefCompany.HierarchyID and x.CompanyID = NodeDefCompany.CompanyID
@@ -40,6 +42,21 @@ merge into NodeDefCompany using (
        values (NEWID(),'JPDUR' ,getdate(),getdate(),x.Name,@LevelNumber,x.CompanyID,x.IndustryID,x.HierarchyID,@SortOrder,x.ParentLevelName,x.GrandParentLevelName) 
       WHEN MATCHED THEN
        UPDATE set SortOrder = @SortOrder;
+end
+else begin
+     -- This is the situation when we have to create a Port point 
+   merge into NodeDefCompany using (
+      select @ParentLevelName as Name, @IndustryID as IndustryID, @HierarchyID as HierarchyID, @CompanyID as CompanyID,@ParentLevelName as ParentLevelName,@GrandParentLevelName as GrandParentLevelName
+      ) x
+      on x.IndustryID = NodeDefCompany.IndustryID and x.HierarchyID = NodeDefCompany.HierarchyID and x.CompanyID = NodeDefCompany.CompanyID
+      	 and x.Name = NodeDefCompany.Name and x.ParentLevelName = NodeDefCompany.ParentLevelName
+	 and x.GrandParentLevelName = NodeDefCompany.GrandParentLevelName
+      when not matched then
+       insert (ID     ,LastUser,createdAt,updatedAt,  Name,       Level,  CompanyID,  IndustryID,  HierarchyID, SortOrder,  ParentLevelName,  GrandParentLevelName,Port)
+       values (NEWID(),'JPDUR' ,getdate(),getdate(),x.Name,@LevelNumber,x.CompanyID,x.IndustryID,x.HierarchyID,@SortOrder,x.ParentLevelName,x.GrandParentLevelName,'P' ) 
+      WHEN MATCHED THEN
+       UPDATE set SortOrder = @SortOrder;
+end
 
 END
 GO

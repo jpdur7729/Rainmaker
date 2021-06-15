@@ -1,7 +1,7 @@
 @echo off 
 rem -------------------------------------------------------------------------
 rem                  Author    : FIS - JPD
-rem                  Time-stamp: "2021-03-04 06:32:53 jpdur"
+rem                  Time-stamp: "2021-06-09 15:12:08 jpdur"
 rem -------------------------------------------------------------------------
 
 rem ------------------------------------------------------------------------------------------------
@@ -10,7 +10,7 @@ rem ----------------------------------------------------------------------------
 rem DESKTOP-9CUFF1O\JPDURANDEAU
 rem DIA2
 
-SET SQLCMD=sqlcmd -S DESKTOP-9CUFF1O\JPDURANDEAU -d DIA2
+SET SQLCMD=sqlcmd -S localhost\JPDURANDEAU -d DIA2
 
 @echo on
 

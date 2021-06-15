@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-04-11 11:21:48 jpdur"
+--                     Time-stamp: "2021-06-10 09:03:56 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -29,8 +29,8 @@ merge into NodeDefIndustry using (
             and x.Name = NodeDefIndustry.Name and x.ParentLevelName = NodeDefIndustry.ParentLevelName 
       when not matched then
       	   -- New column(s) added in order to guarantee the integration with DIA
-      	   insert (ID,LastUser,createdAt,updatedAt,Name,IndustryID,HierarchyID,SortOrder,ParentLevelName)
-      	   values (NEWID(),'JPDUR',getdate(),getdate(),x.Name,x.IndustryID,x.HierarchyID,@SortOrder,x.ParentLevelName) 
+      	   insert (ID,LastUser,createdAt,updatedAt,Name,IndustryID,HierarchyID,SortOrder,ParentLevelName,Level)
+      	   values (NEWID(),'JPDUR',getdate(),getdate(),x.Name,x.IndustryID,x.HierarchyID,@SortOrder,x.ParentLevelName,@LevelNumber) 
       WHEN MATCHED THEN
       UPDATE set SortOrder = @SortOrder;
 

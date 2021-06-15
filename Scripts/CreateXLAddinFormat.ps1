@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-05-02 09:19:36 jpdur"
+#                     Time-stamp: "2021-06-14 18:02:29 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -27,7 +27,6 @@ Import-module -Force -Name ($SourceModule)
 # Create a temporary file to generate the SQL script
 $TempFile = New-TemporaryFile 
 
-
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # This is the line Number which will be used to refer to cell and create the formula
 $LineNumber = 13
@@ -36,46 +35,46 @@ $LineNumber = 13
 # New set of data to be created
 $newdata = @()
 
-# To Ease the conversion from number to letter
+# # To Ease the conversion from number to letter
 $Alphabet = "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-function DetermineNbMonth ($StartDate,$EndDate) {
-    # Determine the number of month between 2 dates
-    $StartMonth = $StartDate.Month
-    $StartYear  = $StartDate.Year
-    $EndMonth   = $DateasDate.Month
-    $EndYear    = $DateasDate.Year
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!	
+function DetermineNbMonth ($StartDate,$EndDate) {				
+    # Determine the number of month between 2 dates				
+    $StartMonth = $StartDate.Month						
+    $StartYear  = $StartDate.Year						
+    $EndMonth   = $DateasDate.Month						
+    $EndYear    = $DateasDate.Year						
 
-    # Nb of Months
-    $NbMonth = ($EndYear - $StartYear)*12 + ($EndMonth - $StartMonth)
+    # Nb of Months								
+    $NbMonth = ($EndYear - $StartYear)*12 + ($EndMonth - $StartMonth)		
 
-    # Return the Nb of Months
-    [math]::Min($NbMonth,3)
-}
+    # Return the Nb of Months							
+    [math]::Min($NbMonth,3)							
+}										
 
-function DetermineLetter ($StartDate,$EndDate) {
+function DetermineLetter ($StartDate,$EndDate) {				
 
-    # Determine the number of month
-    $NbMonth = DetermineNbMonth -StartDate $StartDate -EndDate $EndDate
+    # Determine the number of month						
+    $NbMonth = DetermineNbMonth -StartDate $StartDate -EndDate $EndDate	
 
-    #Determine letter corresponding to the nb of months added
-    #Split into Prefix and Suffix as the difference maybe over 26 
-    $LetterNumber = 6+$NbMonth
+    #Determine letter corresponding to the nb of months added			
+    #Split into Prefix and Suffix as the difference maybe over 26 		
+    $LetterNumber = 6+$NbMonth						
 
-    $Prefix = [int][Math]::Floor($LetterNumber/26)
-    $Suffix = [int]$LetterNumber % 26
+    $Prefix = [int][Math]::Floor($LetterNumber/26)				
+    $Suffix = [int]$LetterNumber % 26						
 
-    # To easy map the data
-    $Letter = $script:Alphabet[$Suffix-1]
-    # If there is a need for a prefix 
-    if ($Prefix -gt 0) {$Letter = $script:Alphabet[$Prefix-1]+$Letter}
+    # To easy map the data							
+    $Letter = $script:Alphabet[$Suffix-1]					
+    # If there is a need for a prefix 					
+    if ($Prefix -gt 0) {$Letter = $script:Alphabet[$Prefix-1]+$Letter}	
 
-    # Return Value is actually a string
-    $Letter
-}
+    # Return Value is actually a string					
+    $Letter									
+}										
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!			
 
 function InsertRecord($Data,$Refbreaklevel,$LimitLevel) {
 
@@ -116,62 +115,81 @@ function InsertRecord($Data,$Refbreaklevel,$LimitLevel) {
 # ----------------------------------------------------------------------------------------------------------
 $Result = "DIA"+$Source.substring(3,$Source.length-3)
 
-# Use only # as separators
-# Any other possible space  - in the name of the company - are replaced by XYZ
-$str = $Source.replace('_','#').replace(' ','XYZ')
+# # Use only # as separators
+# # Any other possible space  - in the name of the company - are replaced by XYZ
+# $str = $Source.replace('_','#').replace(' ','XYZ')
 
-# Pattern to read the file name
-# $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Output>\w+)#(?<Number1>\w+)#(?<FIS>\w+)#(?<Company>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
-$firstLastPattern = "^(?<BatchNumber>\w+)#(?<Company>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<FIS>\w+)#(?<DataStr>\w+)#(?<Encoded>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
-$firstLastPattern
+# # Pattern to read the file name
+# # $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Output>\w+)#(?<Number1>\w+)#(?<FIS>\w+)#(?<Company>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
+# $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Company>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<FIS>\w+)#(?<DataStr>\w+)#(?<Encoded>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
+# $firstLastPattern
 
-$str |
-  Select-String -Pattern $firstLastPattern |
-  Foreach-Object {
-      # here we access the groups by name instead of by index
-      # $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
-      # 002_004_PL_AC_2020_07_FIS_Data_Encoded_20210315_170913.xlsx
-      $BatchNumber, $Company, $Hierarchy, $Scenario, $Year, $Month, $FIS, $DataStr, $Encoded, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Company', 'Hierarchy', 'Scenario', 'Year', 'Month', 'FIS', 'DataStr', 'Encoded', 'CreationDate', 'UnknownNumber', 'extension'].Value
-      [PSCustomObject] @{
-          Hierarchy = $Hierarchy
-          Company  = $Company.replace('XYZ',' ')
-	  # Number1 = $Number1
-	  # FIS = $FIS
-          Scenario = $Scenario
-	  Year = $Year
-	  Month = $Month
-          Extension = $extension
-      }
-  }
+# $str |
+#   Select-String -Pattern $firstLastPattern |
+#   Foreach-Object {
+#       # here we access the groups by name instead of by index
+#       # $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
+#       # 002_004_PL_AC_2020_07_FIS_Data_Encoded_20210315_170913.xlsx
+#       $BatchNumber, $Company, $Hierarchy, $Scenario, $Year, $Month, $FIS, $DataStr, $Encoded, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Company', 'Hierarchy', 'Scenario', 'Year', 'Month', 'FIS', 'DataStr', 'Encoded', 'CreationDate', 'UnknownNumber', 'extension'].Value
+#       [PSCustomObject] @{
+#           Hierarchy = $Hierarchy
+#           Company  = $Company.replace('XYZ',' ')
+# 	  # Number1 = $Number1
+# 	  # FIS = $FIS
+#           Scenario = $Scenario
+# 	  Year = $Year
+# 	  Month = $Month
+#           Extension = $extension
+#       }
+#   }
 
-# In order to be able to have a Company Name with space they are entered as XYZ
-# Let's reestablish the right elements
+# # In order to be able to have a Company Name with space they are entered as XYZ
+# # Let's reestablish the right elements
+# # If the company starts could be understood as a number 004 the user may add a Prefix 
+# # quick fix to the 004 situation on 2021-03-21 
+# $Company = $Company.replace('XYZ',' ')
+# $Company = $Prefix + $Company
+
+# # ----------------------------------------------------------------------
+# # Normalise the values in the fields in order to get the standard values 
+# # ----------------------------------------------------------------------
+
+# # Normalise the Hierarchy
+# switch($Hierarchy)
+# {
+#     'PL' {$Hierarchy = "Income Statement"}
+#     'CF' {$Hierarchy = "Cashflows"}
+#     # 'PL' {$Hierarchy = "Profit Loss"}
+#     'BS' {$Hierarchy = "Balance Sheet"}
+# }
+# $Hierarchy
+
+# # Normalise the Scenario
+# switch($Scenario)
+# {
+#     'AC' {$Scenario = "Actuals"}
+#     'BD' {$Scenario = "Budget"}
+# }
+# $Scenario
+
+# Extract the characteristics based on the File Name 
+$Data = ExtractCharacteristics -FileName $Result
+
+# -------------------------------------------------------------------------------------
 # If the company starts could be understood as a number 004 the user may add a Prefix 
 # quick fix to the 004 situation on 2021-03-21 
-$Company = $Company.replace('XYZ',' ')
-$Company = $Prefix + $Company
+# -------------------------------------------------------------------------------------
+$Company = $Prefix + $Data.Company
+$Year = $Data.Year
+$Month = $Data.Month
+$HierarchyCode = $Data.Hierarchy
+$ScenarioCode = $Data.Scenario
 
-# ----------------------------------------------------------------------
-# Normalise the values in the fields in order to get the standard values 
-# ----------------------------------------------------------------------
+# Standardise the Hierarchy based on the Code Received 
+$Hierarchy = DecodeHierarchyCode -HierarchyCode $HierarchyCode
 
-# Normalise the Hierarchy
-switch($Hierarchy)
-{
-    'PL' {$Hierarchy = "Income Statement"}
-    'CF' {$Hierarchy = "Cashflows"}
-    # 'PL' {$Hierarchy = "Profit Loss"}
-    'BS' {$Hierarchy = "Balance Sheet"}
-}
-$Hierarchy
-
-# Normalise the Scenario
-switch($Scenario)
-{
-    'AC' {$Scenario = "Actuals"}
-    'BD' {$Scenario = "Budget"}
-}
-$Scenario
+# Standardise the Scenario based on the Code Received 
+$Scenario = DecodeScenarioCode -ScenarioCode $ScenarioCode
 
 # Process the Month and Year and convert them to integer
 $Month = [int]$Month
@@ -206,10 +224,20 @@ $Industry = "Unknown"
 
 # Determine the letter to be used
 $StartCollectionDateasDate = [datetime]::ParseExact($StartCollectionDate,"yyyy-MM-dd", $null)
-$NbMonth = DetermineNbMonth -StartDate $StartCollectionDateasDate -EndDate DateasDate
-$Letter  = DetermineLetter  -StartDate $StartCollectionDateasDate -EndDate DateasDate
+$NbMonth = DetermineNbMonth -StartDate $StartCollectionDateasDate -EndDate $DateasDate
+$Letter  = DetermineLetter  -StartDate $StartCollectionDateasDate -EndDate $DateasDate
 
-"Letter for Formula:"+$Letter
+# "Letter for Formula:"+$Letter
+# $NbMonth
+# $StartCollectionDateasDate
+# $StartCollectionDateasDate.Year 
+# $StartCollectionDateasDate.Month
+# "DateasDate"
+# $DateasDate
+# $DateasDate.Year
+# $DateasDate.Month
+# "End Test"
+# exit
 
 # Delete the NewFile if it exists
 rm $Result -ErrorAction SilentlyContinue
@@ -293,14 +321,21 @@ $newdata | Format-Table
 
 # ------------------------------------------------------------------
 # Handling the specific case of the data not being there 
-# due to the structure of the SQL extract NULL is provided
-# and that null is translated into "" and empty string 
-# as part of the null vs. 0 process we put $null in all the fields
+# By default SQL extract NULL is provided but then it 
+# becomes impossible to distinguish between 0 and NULL
+# as "" - empty string - is provided in both cases
+# a conventional value -0.12345 is used in order to make the distinction
+# it is generated in the SQL script via a coalesce
 # ------------------------------------------------------------------
-# Lets Process the data accordingly 
+# Lets Process the data accordingly --> Potential issue when calculating
+# Occurs.... ??? Tried optons such as "0.00" but does not seem to work
+# ------------------------------------------------------------------
 for( $i=0 ; $i -lt $newdata.length ; $i++ ) {
-    if ($newdata[$i].Amount -eq "") {
+    if ($newdata[$i].Amount -eq -0.12345) {
 	$newdata[$i].Amount = $null
+    }
+    if ($newdata[$i].Amount -eq "") {
+	$newdata[$i].Amount = 0.00
     }
 }
 
@@ -358,6 +393,12 @@ $testdata | Format-Table
 
 $excel = $newdata | Select-Object -Property $ListColumns | Export-Excel -AutoSize -NoHeader -StartRow 13 -WorksheetName Data $Result -PassThru
 $ws = $excel.Workbook.Worksheets['Data']
+
+# # Identify the column to be added 
+# "Column to be added Before"
+# $Column2BeAdded = $newdata | Select-Object -Property "Amount"
+# $Column2BeAdded | Format-Table
+# "Column to be added After"
 
 # Hide the Column A
 Set-ExcelColumn -Worksheet $ws -Column 1 -AutoSize -Hide
@@ -456,100 +497,6 @@ Set-ExcelColumn -Worksheet $ws -Column $ColumnNumber -AutoSize
 
 # Closes the data and recalculate
 Close-ExcelPackage $excel -Calculate
-
-# Just show the Excel spreadsheet for debug purposes
-# Export-Excel -Show $Result
-
-# # Create the new spreadsheet 
-# $excel = $data | Export-Excel -AutoSize -AutoFilter -WorksheetName Data $Result -PassThru
-# # Get a pointer to the Data Sheet 
-# $ws = $excel.Workbook.Worksheets['Data']
-
-# # Add the ordering columns in order to prepare the node insertion
-# # =IF(A1=A2,F1,F1+1)
-# Set-ExcelColumn -Worksheet $ws -Heading "0"   -Column 6 -AutoSize -Value {("=IF(A$row=A$($row-1),F$($row-1),F$($row-1)+1)") }
-# # =IF(B1=B2,G1,G1+1)
-# Set-ExcelColumn -Worksheet $ws -Heading "0"   -Column 7 -AutoSize -Value {("=IF(B$row=B$($row-1),G$($row-1),G$($row-1)+1)") }
-# # =IF(C1=C2,H1,H1+1)
-# Set-ExcelColumn -Worksheet $ws -Heading "0"   -Column 8 -AutoSize -Value {("=IF(C$row=C$($row-1),H$($row-1),H$($row-1)+1)") }
-# # IF(LEN(D2)=0,0,IF(C1<>C2,1,I1+1))
-# Set-ExcelColumn -Worksheet $ws -Heading "2"   -Column 9 -AutoSize -Value {("=IF(LEN(D$row)=0,0,IF(C$row<>C$($row-1),1,I$($row-1)+1))") }
-
-# # Levels before Company Level
-# # ="EXEC PS_STG_CREATE_NODE  '"&A2&"','"&Params!$A$1&"',"&F2
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL1" -Column 10 -AutoSize -Value {("=""EXEC PS_STG_CREATE_NODE '""&A$row&""' , '""&Params!`$A`$1&""' , ""&F$row&""      """) }
-# # "EXEC PS_STG_LINK_GENERIC '"&Params!$A$1&"','"&A2&"','"&Params!$A$1&"'"
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL2" -Column 11 -AutoSize -Value {("=""EXEC PS_STG_LINK_GENERIC '""&Params!`$A`$1&""' , '""&A$row&""' , '""&Params!`$A`$1&""'   """) }
-# # ="EXEC PS_STG_CREATE_NODEINDUSTRY '"&B2&"','"&Params!$A$1&"','"&Params!$A$2&"','"&A2&"' ," &G2
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL3" -Column 12 -AutoSize -Value {("=""EXEC PS_STG_CREATE_NODEINDUSTRY '""&B$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&A$row&""' , ""&G$row&""  """) }
-# # ="EXEC PS_STG_LINK_GENERIC_INDUSTRY '"&A2&"','"&B2&"','"&Params!$A$1&"','"&Params!$A$2&"'"
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL4" -Column 13 -AutoSize -Value {("=""EXEC PS_STG_LINK_GENERIC_INDUSTRY '""&A$row&""' , '""&B$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' """) }
-
-# # Levels starting at Company Level
-# # ="EXEC PS_STG_CREATE_NODECOMPANY '"&C2&"','"&Params!$A$1&"','"&Params!$A$2&"','"&Params!$A$3&"','"&B2&"',"&H2&","&C$1
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL5" -Column 14 -AutoSize -Value {("=""EXEC PS_STG_CREATE_NODECOMPANY '""&C$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&B$row&""' , '""&H$row&""' , '""&C`$1&""' """) }
-# # =IF(LEN(D2)=0,"","EXEC PS_STG_CREATE_NODECOMPANY '"&D2&"','"&Params!$A$1&"','"&Params!$A$2&"','"&Params!$A$3&"','"&C2&"',"&I2&","&D$1)
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL6" -Column 15 -AutoSize -Value {("= IF(LEN(D$row)=0,"""",""EXEC PS_STG_CREATE_NODECOMPANY '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&C$row&""' , '""&I$row&""' , '""&D`$1&""' "")") }
-# # ="EXEC PS_STG_LINK_INDUSTRY_COMPANY '"&B2&"','"&C2&"','"&Params!$A$1&"','"& Params!$A$2&"','"& Params!$A$3&"','"&C2&"'"
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL7" -Column 16 -AutoSize -Value {("=""EXEC PS_STG_LINK_INDUSTRY_COMPANY '""&B$row&""' , '""&C$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&A$row&""' """) }
-# # ="EXEC PS_STG_LINK_COMPANY_COMPANY '"&C2&"','"&D2&"','"&Params!$A$1&"','"& Params!$A$2&"','"& Params!$A$3&"','"&B2&"'"
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL8" -Column 17 -AutoSize -Value {("=""EXEC PS_STG_LINK_COMPANY_COMPANY '""&C$row&""' , '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&B$row&""' """) }
-
-# # Add the data
-# # Difficulties to interpret the function text with the parameters
-# # ="EXEC PS_STG_ADD_DATAPOINT_VALUE_COMPANYL12 '"&C2&"','"&D2&"','"&Params!$A$1&"','"& Params!$A$2&"','"& Params!$A$3&"','"& Params!$A$4&"','"&TEXT(Params!$A$5,"dd-mmmm-yy")&"', "&E2
-# # Set-ExcelColumn -Worksheet $ws -Heading "SQL9" -Column 18 -AutoSize -Value {("= IF(LEN(D$row)=0,"""",""EXEC PS_STG_ADD_DATAPOINT_VALUE_COMPANYL2 '""&C$row&""' , '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&Params!`$A`$4&""' , '""&TEXT(Params!`$A`$5,""dd-mmm-yy"")&""' , '""&E$row&""' "")")}
-# # Set-ExcelColumn -Worksheet $ws -Heading "SQL9" -Column 18 -AutoSize -Value {("= IF(LEN(D$row)=0,"""",""EXEC PS_STG_ADD_DATAPOINT_VALUE_COMPANYL2 '""&C$row&""' , '""&D$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&Params!`$A`$4&""' , '""&Params!`$A`$5&""' , ""&E$row&"" "")")}
-# Set-ExcelColumn -Worksheet $ws -Heading "SQL9" -Column 18 -AutoSize -Value {("=""EXEC PS_STG_ADD_DATAPOINT_VALUE_COMPANYL12 '""&C$row&""' , '""&D$row&""' , '""&B$row&""' , '""&Params!`$A`$1&""' , '""&Params!`$A`$2&""' , '""&Params!`$A`$3&""' , '""&Params!`$A`$4&""' , '""&Params!`$A`$5&""' , ""&E$row&"" """)}
-
-# # No need to show // Close Package calculate and closes the spreadsheet 
-# # Different from Export-Excel -ExcelPackage $excel -Calculate which requires to actually save the file
-# Close-ExcelPackage $excel -Calculate
-
-# "Stage 2"
-
-# # Test result spreadsheet - Read it 
-# $HeaderList = @('G1','I1','1','2','Amount','Sort_G1','Sort_I1','Sort_CL1','Sort_CL2','SQL1','SQL2','SQL3','SQL4','SQL5','SQL6','SQL7','SQL8','SQL9')
-# $HeaderList
-# $data = Import-Excel $Result -WorksheetName Data -HeaderName $HeaderList
-# $data
-
-# if ($Scope -ne "DataPointOnly") {
-#     # -------------------------------------------------------------------
-#     # Execute the SQL in each and every of the column 1 column at a time
-#     # In order to create the structure 
-#     # -------------------------------------------------------------------
-#     Execute-SQLColumn -data $data -SQLQuery "SQL1"
-#     Execute-SQLColumn -data $data -SQLQuery "SQL2"
-#     Execute-SQLColumn -data $data -SQLQuery "SQL3"
-#     Execute-SQLColumn -data $data -SQLQuery "SQL4"
-#     Execute-SQLColumn -data $data -SQLQuery "SQL5"
-#     Execute-SQLColumn -data $data -SQLQuery "SQL6"
-#     Execute-SQLColumn -data $data -SQLQuery "SQL7"
-#     Execute-SQLColumn -data $data -SQLQuery "SQL8"
-# }
-
-# "Stage 3 - No upload of values"
-
-# # Execute SQL for the actual DataPoint
-# if ($Scope -ne "StructureOnly") {
-#     Execute-SQLColumn -data $data -SQLQuery "SQL9"
-# }
-
-# # --------------------------------------------------------------------
-# # Process the $Script in order to eliminate duplicate lines 
-# # Lines where all prefixed by SQLx where x is the number of the steps
-# # if not sort+uniq was reshuffling the order of the steps
-# # --------------------------------------------------------------------
-# $TempFile2 = New-TemporaryFile 
-# cat $TempFile | sort | uniq > ($TempFile2)
-
-# # Post precessing the $Script file in order to transform "SQL..EXEC" into EXEC 
-# (Get-Content $TempFile2) -replace '^(SQL\d*EXEC )(.*)','EXEC $2' |  Out-File ($Script)
-
-# # Eliminate the Temporary files
-# rm $TempFile2
-# rm $TempFile
 
 # That way the module is only used as part of the script and no afterwards
 if (!($Keep)) {

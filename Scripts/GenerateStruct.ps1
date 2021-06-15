@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : F2 - JPD
-#                     Time-stamp: "2021-04-29 07:22:41 jpdur"
+#                     Time-stamp: "2021-06-01 16:18:12 jpdur"
 # ------------------------------------------------------------------------------
 
 param(
@@ -35,24 +35,24 @@ $listqueries = @()
 
 # # Query1
 # $query = "EXEC DISPLAY_HIERARCHY_ROOT 'Profit Loss'"
-# $data_query1 = Invoke-DbaQuery -SqlInstance localhost -Database $Database -Query $query | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
+# $data_query1 = Invoke-DbaQuery -SqlInstance $DatabaseInstance  -Database $Database -Query $query | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
 # $listqueries += $query
 
 # # Query2
 # $query2 = "EXEC DISPLAY_HIERARCHY_INDUSTRY 'Profit Loss','Industry 3'"
-# $data_query2 = Invoke-DbaQuery -SqlInstance localhost -Database $Database -Query $query2 | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
+# $data_query2 = Invoke-DbaQuery -SqlInstance $DatabaseInstance  -Database $Database -Query $query2 | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
 # $listqueries += $query2
 
 # # Query3
 # $query3 = "EXEC PS_STG_DISPLAY_HIERARCHY_INDUSTRY_COMPANY 'Income Statement' , 'Telecommunications (517)' , 'G011' "
 $query3 = "EXEC PS_STG_DISPLAY_HIERARCHY_INDUSTRY_COMPANY '"+$Hierarchy+"' , '"+$Industry+"' , '"+$Company+"' "
-$data_query3 = Invoke-DbaQuery -SqlInstance localhost -Database $Database -Query $query3 | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
+$data_query3 = Invoke-DbaQuery -SqlInstance $DatabaseInstance -Database $Database -Query $query3 | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
 $listqueries += $query3
 
 # # Query4
 # $query4 = "EXEC DISPLAY_HIERARCHY_INDUSTRY_DATA 'Profit Loss','Industry 3','TestCo','Actual','31-Oct-20'"
 # $query4 = "EXEC PS_STG_DISPLAY_COLLECTION_DATA 'Income Statement' , 'Telecommunications (517)' , 'G011' , 'Actuals' , '31-Oct-19' "
-# $data_query4 = Invoke-DbaQuery -SqlInstance localhost -Database $Database -Query $query4 | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
+# $data_query4 = Invoke-DbaQuery -SqlInstance $DatabaseInstance  -Database $Database -Query $query4 | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
 # $listqueries += $query4
 
 # ---------------------------------------------------------------------------

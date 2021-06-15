@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-04-11 11:23:51 jpdur"
+--                     Time-stamp: "2021-06-14 13:29:58 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- use [RainmakerLDCJP_OATSTG]
@@ -20,6 +20,11 @@ set @HierarchyID = (select ID from HierarchyList where Name = @HierarchyName )
 set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
 -- set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
 set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
+
+-- To take into account the situations where there is no Company Level Data
+if len(@BottomLevelName) = 0 begin
+   set @BottomLevelName = @TopLevelName 
+end 
 
 merge into Hierarchies using (
       select

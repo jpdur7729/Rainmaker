@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-05-02 08:39:31 jpdur"
+#                     Time-stamp: "2021-06-14 13:25:52 jpdur"
 # ------------------------------------------------------------------------------
 
 
@@ -33,6 +33,10 @@ param(
 # eliminate any DIA or DIX spreadsheets that might have been created by previous runs
 # ------------------------------------------------------------------------------------
 $Pattern = "*_"+$Company+"_"+$Hierarchy+"_"+$Scenario+"_*.xlsx"
+
+# # New Naming convention 2021-06-09
+# $Pattern = "*_"+$Company+"_*_"+$Hierarchy+"_"+$Scenario+"_*.xlsx"
+
 $ListFiles = Get-ChildItem -Filter $Pattern | Where-Object {$_.name -NotLike "DI*.*"} | Sort-Object -Property Name -Descending
 
 # File to be processed 

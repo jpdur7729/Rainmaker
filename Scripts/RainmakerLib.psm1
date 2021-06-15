@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-05-02 08:26:25 jpdur"
+#                     Time-stamp: "2021-06-14 17:32:46 jpdur"
 # ------------------------------------------------------------------------------
 
 
@@ -114,20 +114,51 @@ function DecodeScenarioCode {
     {
 	'AC' {$Scenario = "Actuals"}
 	'BD' {$Scenario = "Budget"}
+	'OB' {$Scenario = "OBP"}
     }
 
     # Return the Scenario
     $Scenario
 }
 
+# ------------------------------------------------------------------------------------------------------------------------------------
+# This is the NAV naming convention... used only temporarily ==> To be Deleted
+# ------------------------------------------------------------------------------------------------------------------------------------
+function ExtractCharacteristicsNAV($FileName) {
+    
+    # Use only # as separators
+    $str = $FileName.replace('_','#').replace(' ','XYZ')
+    
+    $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Company>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<NAV>\w+)#(?<Encoded>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
+    $str |
+      Select-String -Pattern $firstLastPattern |
+      Foreach-Object {
+	  # here we access the groups by name instead of by index
+	  # $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
+	  # Old Format: 002_004_PL_AC_2020_07_FIS_Data_Encoded_20210315_170913.xlsx
+	  # New Format: INI_O011_2020_07_PL_AC_NAV_Encoded_20210608_114629.xlsx
+	  $BatchNumber, $Company, $Year, $Month, $Hierarchy, $Scenario, $NAV, $Encoded, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'NAV', 'Encoded', 'CreationDate', 'UnknownNumber', 'extension'].Value
+	  [PSCustomObject] @{
+              Hierarchy = $Hierarchy
+              Company  = $Company.replace('XYZ',' ')
+	      # Number1 = $Number1
+	      # FIS = $FIS
+              Scenario = $Scenario
+	      Year = $Year
+	      Month = $Month
+              Extension = $extension
+	  }
+      }
+}
+
 # -------------------------------------------------------------------------
 # Extract from FileName the Year/Month needed actualy all the components
 # returns an object with all the identified components of the name
 # -------------------------------------------------------------------------
-# Returns a structure with all rhe required field
+# Returns a structure with all the required fields
 # -------------------------------------------------------------------------
 function ExtractCharacteristics($FileName) {
-    
+
     # Use only # as separators
     $str = $FileName.replace('_','#').replace(' ','XYZ')
     
@@ -178,3 +209,4 @@ function LastDayofMonth($Year,$Month) {
     # Return the calculated dates
     return $DateasDate
 }
+

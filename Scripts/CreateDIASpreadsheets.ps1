@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-05-02 09:24:37 jpdur"
+#                     Time-stamp: "2021-06-14 18:00:40 jpdur"
 # ------------------------------------------------------------------------------
 
 
@@ -37,6 +37,9 @@ if ($To   -eq "") {$ToDate   = $null} else { $ToDate   = [datetime]::ParseExact(
 # Pattern to extract all data
 $Pattern = "*_"+$Company+"_"+$Hierarchy+"_"+$Scenario+"_*.xlsx"
 
+# Name of the Global File to be created with all the DataPoints
+$GlobalFile = "DIG_"+$Company+"_"+$Hierarchy+"_"+$Scenario+"_"+$From.substring(0,7)+"_"+$To.substring(0,7)+".xlsx"
+
 # --------------------------------------------------------------------------------
 # Process all files corresponding to the given pattern in the current directory
 # filter out the DIA_*.xlsx files or more generally DIX_* 
@@ -63,7 +66,9 @@ Get-ChildItem -Filter $Pattern | Where-Object {$_.name -NotLike "DI*.*"} |
 
 	  # Extract the datapoints availalbe from the local database
 	  # EXEC PS_STG_DISPLAY_COLLECTION_DATA 'Balance Sheet' , 'Telecommunications (517)' , 'G011' , 'Actuals' , '31-May-18' 
-	  $ExtractCmd = "EXEC PS_STG_DISPLAY_COLLECTION_DATA '"+$HierarchyName+"' , '"+$Industry+"' , '"+$CompanyName+"' , '"+$ScenarioName+"' , '"+$DateExtract.ToString("dd-MMM-yyyy")+"'"
+	  $ExtractCmd  = "EXEC PS_STG_DISPLAY_COLLECTION_DATA '"+$HierarchyName+"' , '"+$Industry+"' , '"+$CompanyName+"' , '"+$ScenarioName+"' , '"+$DateExtract.ToString("dd-MMM-yyyy")+"'"
+	  # To force the @CoalesceValue and distinguish between 0.0 and NULL
+	  $ExtractCmd += " ,-0.12345 "
 	  $ExtractData = Invoke-DbaQuery -SqlInstance localhost -Database $Database -Query $ExtractCmd | Select-Object * -ExcludeProperty RowError, RowState, Table, ItemArray, HasErrors
 
 	  # Debug Data
@@ -76,7 +81,18 @@ Get-ChildItem -Filter $Pattern | Where-Object {$_.name -NotLike "DI*.*"} |
 	    Export-Excel -AutoSize -AutoFilter -WorksheetName "Data" $ResultFile
 
 	  # Reread that spreadsheet in order to create the DIA spreadsheet
-	  CreateXLAddinFormat -Keep -Source $ResultFile -Prefix $Prefix -StartCollectionDate "2018-05-01"  > $null
+	  CreateXLAddinFormat -Keep -Source $ResultFile -Prefix $Prefix -StartCollectionDate $From > $null
+
+	  # Analyse the ResultFile to determine if this is the 1st case
+	  $Data = ExtractCharacteristics -FileName $ResultFile
+	  if ( ($Data.Year+"-"+$Data.Month) -eq $From.substring(0,7) ) {
+	      rm -Force $GlobalFile >$null
+	      cp $DIAFile $GlobalFile
+	  }
+	  else {
+	      # Add Columns to the Global Spreadsheet
+	      AddColumns -Source $ResultFile -Prefix $Prefix -Column "Test Column"
+	  }
 	  
       }
   }

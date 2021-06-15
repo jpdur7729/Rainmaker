@@ -1,12 +1,15 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-05-02 08:45:56 jpdur"
+#                     Time-stamp: "2021-06-14 13:26:33 jpdur"
 # ------------------------------------------------------------------------------
 
 
 # v0 - Simple call to all files sharing the same Company/Hierarchy/Scenario
 # v1 - Add the filter to specify only the required period for better control
 # v2 - Create 2 scripts // Script = Data into the STG Table // + UpoadScript 
+# --------------------------------------------------------------------------------------
+# v3 - 2021-06-09 - Create script in order to process if no DataPoints at Company Level
+# --------------------------------------------------------------------------------------
 
 
 param(
@@ -28,70 +31,10 @@ param(
 $SourceModule = $Exec_Dir+"/RainmakerLib"
 Import-module -Force -Name ($SourceModule)
 
-# ------------------------------------------------------------
-# Execution is done within the directory where the script it called 
-# that way it gives easy access to the data files to be processed
-# ------------------------------------------------------------
-# $Exec_Dir is the actual directory where the script is found 
-# ------------------------------------------------------------
-
-# # Extract from FileName the Year/Month needed actualy all the components
-# # returns an object with all the identified components of the name
-# function Extract-Year-Month($FileName) {
-    
-#     # Use only # as separators
-#     $str = $FileName.replace('_','#').replace(' ','XYZ')
-    
-#     $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Company>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<FIS>\w+)#(?<DataStr>\w+)#(?<Encoded>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
-#     $str |
-#       Select-String -Pattern $firstLastPattern |
-#       Foreach-Object {
-# 	  # here we access the groups by name instead of by index
-# 	  # $BatchNumber, $Output, $Number1, $FIS, $Company, $Year, $Month, $Hierarchy, $Scenario, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Output', 'Number1', 'FIS', 'Company', 'Year', 'Month', 'Hierarchy', 'Scenario', 'CreationDate', 'UnknownNumber', 'extension'].Value
-# 	  # 002_004_PL_AC_2020_07_FIS_Data_Encoded_20210315_170913.xlsx
-# 	  $BatchNumber, $Company, $Hierarchy, $Scenario, $Year, $Month, $FIS, $DataStr, $Encoded, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Company', 'Hierarchy', 'Scenario', 'Year', 'Month', 'FIS', 'DataStr', 'Encoded', 'CreationDate', 'UnknownNumber', 'extension'].Value
-# 	  [PSCustomObject] @{
-#               Hierarchy = $Hierarchy
-#               Company  = $Company.replace('XYZ',' ')
-# 	      # Number1 = $Number1
-# 	      # FIS = $FIS
-#               Scenario = $Scenario
-# 	      Year = $Year
-# 	      Month = $Month
-#               Extension = $extension
-# 	  }
-#       }
-# }
-
-# # Return a Date which is the last day of the month received
-# function LastDayofMonth($Year,$Month) {
-
-#     # Process the Month and Year and convert them to integer
-#     $Month = [int]$Month
-#     $Year  = [int]$Year
-
-#     # Determine last day of the month by going to the 1 day of following month 
-#     if ($Month -eq 12) {
-# 	$Month = 1
-# 	$Year++}
-#     else{
-# 	$Month++
-#     }
-
-#     # Format the Month
-#     $MonthStr = "{0:00}" -f $Month
-#     $DateString = "$Year-$MonthStr-01"
-
-#     # Change the string to date in order to be able to later choose the right format
-#     $DateasDate = [datetime]::ParseExact($DateString,"yyyy-MM-dd", $null)
-#     $DateasDate = $DateasDate.addDays(-1)
-
-#     # Return the calculated dates
-#     return $DateasDate
-# }
-
-# Pattern to extract all data
+# Pattern to extract all data - Old Naming Convention
 $Pattern = "*_"+$Company+"_"+$Hierarchy+"_"+$Scenario+"_*.xlsx"
+# # New Naming Convention 2021-06-09
+# $Pattern = "*_"+$Company+"_*_"+$Hierarchy+"_"+$Scenario+"_*.xlsx"
 
 # Access the module to extract the Corresponding Industry 
 $Industry = GetIndustry -Company ($Prefix+$Company) -DatabaseInstance $DatabaseInstance -Database $Database

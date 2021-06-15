@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-05-02 09:28:19 jpdur"
+#                     Time-stamp: "2021-06-14 17:03:24 jpdur"
 # ------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------
@@ -17,7 +17,7 @@ param(
     [Parameter(Mandatory=$false)] [switch] $Keep,
     [Parameter(Mandatory=$false)] [string] $From = "2018-05-01", # From date in yyyy-mm-dd format 
     [Parameter(Mandatory=$false)] [string] $To = "2100-01-01",   # To  date in yyyy-mm-dd format 
-    [Parameter(Mandatory=$false)] [string] $Prefix = "G" #Quick Fix for company name such as 004 - not to be used/knowm
+    [Parameter(Mandatory=$false)] [string] $Prefix = "" #Quick Fix for company name such as 004 - not to be used/knowm
 )
 
 # Call the common library of all the different modules 
@@ -30,13 +30,19 @@ Import-module -Force -Name ($SourceModule)
 
 # ------------------------------------------------------------------------------
 # It is assumed that it is launched from a directory where the KPI files are 
-# The structure being Data/XXX/KPI where 
+# The structure being Data/XXX/KPI/SC where 
 # XXX is the Company Name 
 # KPI is the KPI
+# SC is the Scenario
 # ------------------------------------------------------------------------------
 $FullPath = (Get-Location).Path
 
+# Extract the SC i.e. the latest directory
+$index = $FullPath.LastIndexOf('\')
+$Scenario = $FullPath.substring($index+1,$FullPath.length - $index -1)
+
 # Extract the KPI i.e. the latest directory
+$FullPath = $FullPath.substring(0,$index)
 $index = $FullPath.LastIndexOf('\')
 $HierarchyName = $FullPath.substring($index+1,$FullPath.length - $index -1)
 
@@ -48,11 +54,24 @@ $FullPath = $FullPath.substring(0,$index)
 $index = $FullPath.LastIndexOf('\')
 $Company = $FullPath.substring($index+1,$FullPath.length - $index -1)
 
+# Extract the From Date i.e. the earliest Date for whch we have data
+$Pattern = "*_"+$Company+"_"+$Hierarchy+"_"+$Scenario+"_*.xlsx"
+$ListFiles = Get-ChildItem -Filter $Pattern | Where-Object {$_.name -NotLike "DI*_*.*"} | Sort-Object -Property Name 
+"Initial File with Data :" + $ListFiles[0].Name
+
+# We extract the data for the file whose name has been identified
+$Data = ExtractCharacteristics -FileName $ListFiles[0].Name
+$From = $Data.Year+"-"+$Data.Month+"-01"
+
+# !!!!!! Force to minimize the process 
+$From = "2020-09-01"
+
 "Key parameters about to be used "
 "--------------------------------"
 "KPI     : " + $HierarchyName + " i.e. " + $Hierarchy
 "Company : " + $Company + " with Prefix " + $Prefix+$Company
-"Scenario: " + $Scenario 
+"Scenario: " + $Scenario
+"From    : " + $From
 
 # ----------------------------------------------------------------
 # In order to check if the nb of lines is changing through time
@@ -61,18 +80,20 @@ $Company = $FullPath.substring($index+1,$FullPath.length - $index -1)
 # ----------------------------------------------------------------
 EvolutionStructure -Company $Company -Scenario $Scenario -Hierarchy $Hierarchy
 
-# -----------------------------------------
-# Message Poppup documentation 
-# https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/windows-scripting/x83z1d9f(v=vs.84)?redirectedfrom=MSDN
-# -----------------------------------------
-"Check Popup to continue ..."
-$wshell = New-Object -ComObject Wscript.Shell
-$result = $wshell.Popup("Check lines",0,"Done",0x1 + 0x20)
+# !!!!!! to have a quicker testing path
 
-# If cancel is chosen then the script is stopped
-if ($result -ne 1) {
-    exit
-}
+# # -----------------------------------------
+# # Message Poppup documentation 
+# # https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/windows-scripting/x83z1d9f(v=vs.84)?redirectedfrom=MSDN
+# # -----------------------------------------
+# "Check Popup to continue ..."
+# $wshell = New-Object -ComObject Wscript.Shell
+# $result = $wshell.Popup("Check lines",0,"Done",0x1 + 0x20)
+
+# # If cancel is chosen then the script is stopped
+# if ($result -ne 1) {
+#     exit
+# }
 
 # ------------------------------------------------------------------------------
 # Part 1 - Extract all the needed data and store it into the local SQL database
@@ -95,6 +116,9 @@ if ( ($LogFile -ne "") -and (Test-Path $LogFile) ) {
     "No data in "+$LogFile
 }
 
+# Execute the script which has been generated
+sqlcmd -S ($DatabaseInstance) -d ($Database) -i ($Script)
+
 # --------------------------------------------------------------------------------------
 # Part 2 - Extract the data and create/Execute the scripts to store all the DataPoints
 # --------------------------------------------------------------------------------------
@@ -113,6 +137,9 @@ if ( ($LogFile -ne "") -and (Test-Path $LogFile) ) {
 "  Data has been stored into local SQL database "
 " -------------------------------------------------"
 "Results DIA spreadsheets are about to be generated"
+
+# Execute the script which has been generated
+sqlcmd -S ($DatabaseInstance) -d ($Database) -i "DataResults.sql"
 
 # --------------------------------------------------------------------------------------
 # Part 3 - Extract the data and create/Execute the scripts to store all the DataPoints

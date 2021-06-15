@@ -1,6 +1,6 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-03-02 14:58:23 jpdur"
+--                     Time-stamp: "2021-06-14 13:17:51 jpdur"
 -- ------------------------------------------------------------------------------
 
 -- -----------------------------------------------------------------
@@ -8,7 +8,7 @@
 -- -----------------------------------------------------------------
 CREATE or ALTER PROCEDURE [dbo].[PS_STG_DISPLAY_COLLECTION_DATA]
 (@HierarchyName as varchar(100),@IndustryName as varchar(100),@CompanyName as varchar(100),
-@Scenario as varchar(100),@DateValue as date)
+@Scenario as varchar(100),@DateValue as date,@CoalesceValue as float = -0.12345)
 as
 BEGIN
 
@@ -21,10 +21,15 @@ set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
 -- set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
 set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
 
-select Hierarchy,Level1,IndustryLevel,CompanyLevel1,coalesce(CompanyLevel2,'') as CompanyLevel2,coalesce(AmountL2,AmountL1) as Amount
+select Hierarchy,Level1,IndustryLevel,CompanyLevel1,coalesce(CompanyLevel2,'') as CompanyLevel2,coalesce(AmountL2,AmountL1,@CoalesceValue) as Amount
      ,SOL1,SOL2,SOL3,SortOrderCL2
 from
-       (select hlist.Name as 'Hierarchy',n2.Name as 'Level1',n3.Name as IndustryLevel,n4.Name as CompanyLevel1,
+       (select hlist.Name as 'Hierarchy',n2.Name as 'Level1',n3.Name as IndustryLevel,
+       	   -- To take into account the P situation
+       	   case n4.Port
+	   when 'P' then ''
+	   else n4.Name
+	   end as CompanyLevel1,
 	   h4.NodeDefID as NodeDefID,
 	   dbo.PS_STG_GetDataPointValue_Num(n4.ID, @CompanyID, @Scenario, @DateValue) as AmountL1,
        n2.SortOrder as SOL1,n3.SortOrder as SOL2,n4.SortOrder as SOL3

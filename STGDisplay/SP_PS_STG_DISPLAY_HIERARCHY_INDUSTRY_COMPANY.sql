@@ -20,7 +20,6 @@ set @IndustryID = (select ID from IndustryList where Name = @IndustryName )
 -- set @CompanyID = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
 set @CompanyID = (select ID from CompanyList where Name = @CompanyName)
 
-
 select Hierarchy,Level1,IndustryLevel,CompanyLevel1,coalesce(CompanyLevel2,'') as CompanyLevel2
 from
        (select hlist.Name as 'Hierarchy',n2.Name as 'Level1',n3.Name as IndustryLevel,n4.Name as CompanyLevel1,

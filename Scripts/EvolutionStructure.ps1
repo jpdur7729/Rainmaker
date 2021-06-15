@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-05-01 08:48:58 jpdur"
+#                     Time-stamp: "2021-06-10 07:08:55 jpdur"
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
@@ -31,8 +31,11 @@ $ListSourceItem = @()
 # Get-ChildItem -Filter $Pattern |
   #   Foreach-Object {
 
-# Pattern to extract all data
+# Pattern to extract all data / Old Naming convention
 $Pattern = "*_"+$Company+"_"+$Hierarchy+"_"+$Scenario+"_*.xlsx"
+
+# # New Naming convention - 2021-06-09
+# $Pattern = "*_"+$Company+"_*_"+$Hierarchy+"_"+$Scenario+"_*.xlsx"
 
 # --------------------------------------------------------------------------------
 # Process all files corresponding to the given pattern in the current directory
