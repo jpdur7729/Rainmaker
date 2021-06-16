@@ -1,8 +1,10 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-04-20 07:05:24 jpdur"
+--                     Time-stamp: "2021-06-16 09:31:35 jpdur"
 -- ------------------------------------------------------------------------------
 
+-- 2021-06-16 // Synonym + eliminate from CompanyLevel the nodes flagged as P 
+-- ---------------------------------------------------------------------------------
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_IND_Template6] ( @IndustryName as varchar(100) )
 as
 BEGIN
@@ -15,12 +17,12 @@ BEGIN
       set @IsConfirmed = 1
       
       -- Step 1 we just add 1 line for each industry 
-      merge into RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template
+      merge into DIARM_KPI_IND_Template
       using (
       	    Select @IndustryID as IndustryId 
 	  ) x
       on
-      x.IndustryID = RM_KPI_IND_Template.IndustryID
+      x.IndustryID = DIARM_KPI_IND_Template.IndustryID
       when NOT MATCHED THEN
           INSERT (  IndustryID, IsConfirmed,CreatedBy       ,CreatedOn)
 	  VALUES (x.IndustryID,@IsConfirmed,'Via Script JPD',getdate());

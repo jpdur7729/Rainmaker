@@ -1,8 +1,10 @@
 -- ------------------------------------------------------------------------------
 --                     Author    : FIS - JPD
---                     Time-stamp: "2021-04-11 12:13:02 jpdur"
+--                     Time-stamp: "2021-06-16 14:48:41 jpdur"
 -- ------------------------------------------------------------------------------
 
+-- 2021-06-16 // Synonym + eliminate from CompanyLevel the nodes flagged as P 
+-- ---------------------------------------------------------------------------------
 -- Populate the RM_KPI_NODE table for all NodeDef / NodeDefIndustry / NodeDefCompany
 -- and update into the NodeDefTable the RM_NODE to have the exact value of the 
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_NODE] ( @HierarchyName as varchar(100), @IndustryName as varchar(100), @CompanyName as varchar(100))
@@ -31,10 +33,15 @@ BEGIN
       -- Create an Intermediate Table to do the extract in one go with all the Nodes
       select * into #ListNodesDataItemNames from (
       	     select ID,Name,RM_NODE_ID from NodeDef         where HierarchyID = @HierarchyID
-	     union 
-      	     select ID,Name,RM_NODE_ID from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID
-	     union 
-      	     select ID,Name,RM_NODE_ID from NodeDefCompany  where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
+	     -- Extra condition to eliminate superfluous TopNode which have been defined for Other Industry/Companies
+	     	      		   	     		 and ID in (select ParentNodeDefID from Hierarchies where NodeDefID in (select ID from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID))
+	     union
+	     -- Crucial to add that test on the Port if not the item is selected as a node because it is a parent of the
+	     -- NodeDef flagged as P
+      	     select ID,Name,RM_NODE_ID from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID and Port <> 'D'
+	     union
+	     -- Eliminate the Port Nodes as they are created to store the data not to describe the structure
+      	     select ID,Name,RM_NODE_ID from NodeDefCompany  where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and Port <> 'P'
       ) tmp
 
       -- Eliminate all the Nodes which do not appear iun Hierarchies as being a ParentNodeDefID
@@ -42,9 +49,12 @@ BEGIN
       select * into #ListNodesNames from
       	     (select * from #ListNodesDataItemNames where ID in (select ParentNodeDefID from Hierarchies)) tmp
 
+      -- Debug
+      select 'KPI-Node',* from #ListNodesNames
+
       -- To prevent any issues Select the data from RM_KPI_Node
       select * into #KPIListNodes
-      from RainmakerLDCJP_OAT.dbo.RM_KPI_Node KPINode
+      from DIARM_KPI_Node KPINode
       where CreatedOn <> '01-Jan-1900'
 
       -- Keep and store the DateTime to be used to flag all records
@@ -72,7 +82,7 @@ BEGIN
 
       -- Insert the new records into the RM_KPI_Node table flagged because they all have 
       -- the same CreatedOn value 
-      INSERT INTO RainmakerLDCJP_OAT.dbo.RM_KPI_Node 
+      INSERT INTO DIARM_KPI_Node 
       select * from #KPIListNodes where CreatedOn = @CurrentDateTime
 
       -- ---------------------------------------------------------------------------

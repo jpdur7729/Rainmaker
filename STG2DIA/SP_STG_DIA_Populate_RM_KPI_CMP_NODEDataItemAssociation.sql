@@ -1,8 +1,10 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-04-12 08:28:08 jpdur"
+                       Time-stamp: "2021-06-16 16:07:52 jpdur"
    ------------------------------------------------------------------------------ */
 
+-- 2021-06-16 // Synonym + eliminate from CompanyLevel the nodes flagged as P 
+-- ---------------------------------------------------------------------------------
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_CMP_NodeDataItemAssociation] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
 as
 BEGIN
@@ -14,26 +16,28 @@ BEGIN
       declare @IndustryID as nvarchar(36)
       declare @KPIIndustryTemplateID as varchar(36)
       set @IndustryID  = (select ID from IndustryList where Name = @IndustryName )
-      set @KPIIndustryTemplateID  = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template where IndustryID = @IndustryID )
+      set @KPIIndustryTemplateID  = (select ID from DIARM_KPI_IND_Template where IndustryID = @IndustryID )
 
       declare @CompanyID as nvarchar(36)
       declare @KPICompanyTemplateID as nvarchar(36)
       -- set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
       set @CompanyID   = (select ID from CompanyList where Name = @CompanyName)
-      set @KPICompanyTemplateID = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template where CompanyID = @CompanyID )
+      set @KPICompanyTemplateID = (select ID from DIARM_KPI_CMP_Template where CompanyID = @CompanyID )
 
       -- Process all the final Leaves for the Hierarchy/Industry/Company
       select * into #ListNodesDataItemNames from (
       	     -- select ID as STGID,Name,NEWID() as RM_DataItemID,SortOrder as Sequence from NodeDef         where HierarchyID = @HierarchyID
 	     -- union 
-      	     select ID as STGID,Name,              RM_DataItemID,SortOrder as Sequence from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID
+      	     select ID as STGID,Name,              RM_DataItemID,SortOrder as Sequence from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID and Port = 'D'
 	     union 
-      	     select ID as STGID,Name,              RM_DataItemID,SortOrder as Sequence from NodeDefCompany  where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
+      	     select ID as STGID,Name,              RM_DataItemID,SortOrder as Sequence from NodeDefCompany  where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and Port <> 'P'
       ) tmp
 
       -- Eliminate all the Nodes which are a parent --> we only get the FinalLeaves
       select NEWID() as ID,* into #FinalLeaves0 from
-      	     (select * from #ListNodesDataItemNames where STGID not in (select ParentNodeDefID from Hierarchies)) tmp
+      	     -- (select * from #ListNodesDataItemNames where STGID not in (select ParentNodeDefID from Hierarchies)) tmp
+	     -- Modified version to be tested with complex structure / 2021-06-16
+      	     (select * from #ListNodesDataItemNames) tmp
 
       -- We add the link with the Parent Node using Hierarchies 
       -- add the full path of the parent in order to identify the data
@@ -45,10 +49,10 @@ BEGIN
 	  -- select 'FinalLeaves',* from #FinalLeaves
 
       -- Mark all existing information as UnChecked
-      update RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeDataItemAssociation
+      update DIARM_KPI_CMP_NodeDataItemAssociation
 	set IsChecked = 0
 	where NodeAssociationID in (
-	      select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeAssociation
+	      select ID from DIARM_KPI_CMP_NodeAssociation
 		      where KPITypeID = @HierarchyID and KPICompanyTemplateID = @KPICompanyTemplateID
 	      union
 	       -- Do NOT delete. It guarantees that if there is no data in KCNA, nothing is updated 
@@ -62,7 +66,7 @@ BEGIN
       merge into #FinalLeavesUParent fl
 	using (
 	      select KCNA.ID,fl.ParentPath
-		      from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeAssociation KCNA,#FinalLeavesUParent fl
+		      from DIARM_KPI_CMP_NodeAssociation KCNA,#FinalLeavesUParent fl
 		      where KCNA.KPITypeID = @HierarchyID and KPICompanyTemplateID = @KPICompanyTemplateID
 		        and KCNA.Description = fl.ParentPath
 	) x
@@ -73,8 +77,11 @@ BEGIN
 	-- Associate the NodeAssociationID to all the FinalLeaves
 	select * into #FinalLeaves2 from (select fl.*,flu.NodeAssociationID from #FinalLeaves fl, #FinalLeavesUParent flu where fl.ParentPath = flu.ParentPath) tmp
 
+	-- Debug
+	select 'CMP_NodeDataItemAssoc',* from #FinalLeaves2 
+
 	-- We reset to Ischecked all existing Records
-	merge into RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_NodeDataItemAssociation KCNDA
+	merge into DIARM_KPI_CMP_NodeDataItemAssociation KCNDA
 	using (
 		select ID,RM_DataItemID as DataItemID,NodeAssociationID,Sequence from #FinalLeaves2
 	) x

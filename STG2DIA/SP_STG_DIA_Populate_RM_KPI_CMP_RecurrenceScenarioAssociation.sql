@@ -1,8 +1,9 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-04-11 19:25:44 jpdur"
+                       Time-stamp: "2021-06-16 10:05:01 jpdur"
    ------------------------------------------------------------------------------ */
 
+-- 2021-06-16 // Synonym + eliminate from CompanyLevel the nodes flagged as P 
 -- ------------------------------------------------------------------------------------
 -- To be done after EXEC STG_DIA_RM_Populate KPI_CMP_Template 
 -- Assumes that RM_KPI_CMP_Template and RM_KPI_CMP_RecurrenceAssociation
@@ -22,22 +23,22 @@ BEGIN
       declare @IndustryID as nvarchar(36)
       declare @KPIIndustryTemplateID as varchar(36)
       set @IndustryID  = (select ID from IndustryList where Name = @IndustryName )
-      set @KPIIndustryTemplateID  = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template where IndustryID = @IndustryID )
+      set @KPIIndustryTemplateID  = (select ID from DIARM_KPI_IND_Template where IndustryID = @IndustryID )
 
       declare @CompanyID as nvarchar(36)
       set @CompanyID   = (select ID from CompanyList where Name = @CompanyName)
 
       -- Identify the ID from RM_KPI_CMP_Template
       declare @KPICompanyTemplateID as nvarchar(36)
-      set @KPICompanyTemplateID = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template where KPIIndustryTemplateID = @KPIIndustryTemplateID and CompanyID = @CompanyID)
+      set @KPICompanyTemplateID = (select ID from DIARM_KPI_CMP_Template where KPIIndustryTemplateID = @KPIIndustryTemplateID and CompanyID = @CompanyID)
 
       -- Select the data from RM_KPI_CMP_RecurrenceAssociation
-      merge into RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_RecurrenceScenarioAssociation as KCRSA
+      merge into DIARM_KPI_CMP_RecurrenceScenarioAssociation as KCRSA
       using (
       	    select @KPICompanyTemplateID as KPICompanyTemplateID,
       	     	   ID as KPICompanyRecurrenceAssociationID,
-	     	   (select ID from RainmakerLDCJP_OAT.dbo.RM_ClassType where Name = @ScenarioName) as ClassTypeID
-      	    from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_RecurrenceAssociation
+	     	   (select ID from DIARM_ClassType where Name = @ScenarioName) as ClassTypeID
+      	    from DIARM_KPI_CMP_RecurrenceAssociation
       	    where KPICompanyTemplateID = @KPICompanyTemplateID
       ) x
       on x.KPICompanyTemplateID = KCRSA.KPICompanyTemplateID

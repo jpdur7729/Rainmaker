@@ -1,8 +1,10 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-04-11 18:07:09 jpdur"
+                       Time-stamp: "2021-06-16 14:23:52 jpdur"
    ------------------------------------------------------------------------------ */
 
+-- 2021-06-16 // Synonym + eliminate from CompanyLevel the nodes flagged as P 
+-- ---------------------------------------------------------------------------------
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_DataItem] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100) ,@CompanyName as varchar(100) )
 as
 BEGIN
@@ -14,13 +16,13 @@ BEGIN
       declare @IndustryID as nvarchar(36)
       declare @KPIIndustryTemplateID as varchar(36)
       set @IndustryID  = (select ID from IndustryList where Name = @IndustryName )
-      set @KPIIndustryTemplateID  = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template where IndustryID = @IndustryID )
+      set @KPIIndustryTemplateID  = (select ID from DIARM_KPI_IND_Template where IndustryID = @IndustryID )
 
       declare @CompanyID as nvarchar(36)
       declare @KPICompanyConfigurationID as nvarchar(36)
       -- set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
       set @CompanyID   = (select ID from CompanyList where Name = @CompanyName)
-      set @KPICompanyConfigurationID = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template where CompanyID = @CompanyID )
+      set @KPICompanyConfigurationID = (select ID from DIARM_KPI_CMP_Template where CompanyID = @CompanyID )
 
       declare @Description as nvarchar(50)
       set @Description = 'JPD /'+@HierarchyName+'/'+@IndustryName
@@ -38,27 +40,37 @@ BEGIN
       set @Scale = 2
 
       -- Store the value type ID needed
-      declare  @ValueTypeID as varchar(36) =  (select ID from RainmakerLDCJP_OAT.dbo.RMX_ValueType where Name = 'Numeric')
+      declare  @ValueTypeID as varchar(36) =  (select ID from DIARMX_ValueType where Name = 'Numeric')
 
       -- Process all the final Leaves for the Hierarchy/Industry/Company
       select * into #ListNodesDataItemNames from (
-      	     select ID as STGID,Name from NodeDef         where HierarchyID = @HierarchyID
+      	     select ID as STGID,Name,' ' as Port from NodeDef         where HierarchyID = @HierarchyID
 	     union 
-      	     select ID as STGID,Name from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID
+      	     select ID as STGID,Name,Port        from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID
 	     union 
-      	     select ID as STGID,Name from NodeDefCompany  where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID
+      	     select ID as STGID,Name,Port        from NodeDefCompany  where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and Port <> 'P'
       ) tmp
 
+      -- ---------------------------------------------------------------------------------
       -- Eliminate all the Nodes which are a parent --> we only get the FinalLeaves
+      -- For NodeDefIndustry Port = 'D' if it is actually a Data Point to be uzed
+      -- that way the test/filter works also for the mixed situation where some data are
+      -- captured only down to industry and other items are extended at the company level
+      -- ---------------------------------------------------------------------------------
       select * into #FinalLeaves from
-      	     (select * from #ListNodesDataItemNames where STGID not in (select ParentNodeDefID from Hierarchies)) tmp
+      	     (select * from #ListNodesDataItemNames where
+	     	     STGID not in (select ParentNodeDefID from Hierarchies)
+		     or Port = 'D' ) tmp
 
-	  -- Eliminate duplicate Names 
-	  select *,NEWID() as RM_DataItemID into #FinalLeavesUName from (select distinct Name from #FinalLeaves) tmp
+      -- Debug
+      select 'Data-Item',* from #FinalLeaves
+
+      -- Eliminate duplicate Names 
+      select *,NEWID() as RM_DataItemID into #FinalLeavesUName from (select distinct Name from #FinalLeaves) tmp
 
       -- To prevent any issues Select the data from RM_DataItem
       select * into #KPIListDataItem
-      from RainmakerLDCJP_OAT.dbo.RM_DataItem
+      from DIARM_DataItem
       where CreatedOn > '01-Apr-2021' and KPITypeId = @HierarchyID and IndustryId = @IndustryID
 
       ---- Update the list of DataItems accordingly for those already existing 
@@ -99,7 +111,7 @@ BEGIN
 
       -- Insert the new records into the RM_DataItem table flagged because they all have 
       -- the same CreatedOn value 
-      INSERT INTO RainmakerLDCJP_OAT.dbo.RM_DataItem
+      INSERT INTO DIARM_DataItem
       select * from #KPIListDataItem where CreatedOn = @CurrentDateTime
 
       -- ---------------------------------------------------------------------------

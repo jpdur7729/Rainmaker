@@ -1,12 +1,12 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-04-12 06:27:02 jpdur"
+                       Time-stamp: "2021-06-16 10:03:30 jpdur"
    ------------------------------------------------------------------------------ */
 
+-- 2021-06-16 // Synonym + eliminate from CompanyLevel the nodes flagged as P 
 -- ------------------------------------------------------------------------------------
 -- Create the frequency and the start date for which a company will capture DataPoints
 -- ------------------------------------------------------------------------------------
-
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_CMP_Template] (
        @IndustryName as varchar(100),
        @CompanyName as varchar(100),
@@ -20,7 +20,7 @@ BEGIN
       declare @IndustryID as nvarchar(36)
       declare @KPIIndustryTemplateID as varchar(36)
       set @IndustryID  = (select ID from IndustryList where Name = @IndustryName )
-      set @KPIIndustryTemplateID  = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template where IndustryID = @IndustryID )
+      set @KPIIndustryTemplateID  = (select ID from DIARM_KPI_IND_Template where IndustryID = @IndustryID )
 
       declare @CompanyID as nvarchar(36)
       -- set @CompanyID   = (select ID from CompanyList where Name = @CompanyName and IndustryID = @IndustryID)
@@ -35,14 +35,14 @@ BEGIN
       set @IsConfirmed = 1
 
       declare @cnt as integer
-      set @cnt = (select count(*) from RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template where @KPIIndustryTemplateID = KPIIndustryTemplateID and @CompanyID = CompanyID)
+      set @cnt = (select count(*) from DIARM_KPI_CMP_Template where @KPIIndustryTemplateID = KPIIndustryTemplateID and @CompanyID = CompanyID)
 
       if (@cnt = 0) begin 
       	 -- We add the nodes from RM_Node associated to the instrustry
-      	 merge into RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_Template RM_KCompConf
+      	 merge into DIARM_KPI_CMP_Template RM_KCompConf
       	 using (
       	 select @KPIIndustryTemplateID as KPIIndustryTemplateID,@CompanyID as CompanyID,
-      	     (select ID from RainmakerLDCJP_OAT.dbo.RMX_CollectionRecurrence where Name= 'End after X periods') as KPIRecurrenceID
+      	     (select ID from DIARMX_CollectionRecurrence where Name= 'End after X periods') as KPIRecurrenceID
 	     ) x
       	 on
       	 x.KPIIndustryTemplateID = RM_KCompConf.KPIIndustryTemplateID and x.CompanyID = RM_KCompConf.CompanyID
@@ -55,18 +55,18 @@ BEGIN
       	 set @StartCollectionQuarter = DATEADD(qq, DATEDIFF(qq, 0, @StartCollectionDate), 0)
 
          -- Create the intermediate table 
-	 select case when Name = 'Financials' then (select ID from RainmakerLDCJP_OAT.dbo.RMX_CollectionPeriod where Name = 'Monthly')
-	 	     	       	 	              else (select ID from RainmakerLDCJP_OAT.dbo.RMX_CollectionPeriod where Name = 'Quarterly')
+	 select case when Name = 'Financials' then (select ID from DIARMX_CollectionPeriod where Name = 'Monthly')
+	 	     	       	 	              else (select ID from DIARMX_CollectionPeriod where Name = 'Quarterly')
 		end as CollectionPeriodID,
 		case when Name = 'Financials' then 1
 	 	     	       	 	          else 3
 		end as NbMonths,
 		KPICat.ID as KPICategoryID
 	 into #InterTable 
-	 from RainmakerLDCJP_OAT.dbo.RMX_KPICategory KPICat where Name <> 'All Financials'
+	 from DIARMX_KPICategory KPICat where Name <> 'All Financials'
 
 	 -- Add the StartDate/EndDate and insert into RM_KPICompanyRecurrenceAssociation
-	 INSERT into RainmakerLDCJP_OAT.dbo.RM_KPI_CMP_RecurrenceAssociation
+	 INSERT into DIARM_KPI_CMP_RecurrenceAssociation
 	 select NEWID() as ID,
       	 	@KPICompanyConfigurationID as KPICompanyConfigurationID,
 	        case when NbMonths = 1 then @StartCollectionDate

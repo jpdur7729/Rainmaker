@@ -1,8 +1,12 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-04-12 08:41:15 jpdur"
+                       Time-stamp: "2021-06-16 11:05:41 jpdur"
    ------------------------------------------------------------------------------ */
 
+-- Usually empty except for Cash or the legacy LDC/NAV structure for BS and PL
+-- ---------------------------------------------------------------------------------
+-- 2021-06-16 // Synonym + eliminate from CompanyLevel the nodes flagged as P 
+-- ---------------------------------------------------------------------------------
 CREATE or ALTER PROCEDURE [dbo].[STG_DIA_Populate_RM_KPI_IND_NodeDataItemAssociation] ( @HierarchyName as varchar(100) ,@IndustryName as varchar(100))
 as
 BEGIN
@@ -14,18 +18,12 @@ BEGIN
       declare @IndustryID as nvarchar(36)
       declare @KPIIndustryTemplateID as varchar(36)
       set @IndustryID  = (select ID from IndustryList where Name = @IndustryName )
-      set @KPIIndustryTemplateID  = (select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_Template where IndustryID = @IndustryID )
+      set @KPIIndustryTemplateID  = (select ID from DIARM_KPI_IND_Template where IndustryID = @IndustryID )
 
-      -- Process all the final Leaves for the Hierarchy/Industry/Company
-      select * into #ListNodesDataItemNames from (
-      	     -- select ID as STGID,Name,NEWID() as RM_DataItemID,SortOrder as Sequence from NodeDef         where HierarchyID = @HierarchyID
-	     -- union 
-      	     select ID as STGID,Name,              RM_DataItemID,SortOrder as Sequence from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID
-      ) tmp
-
-      -- Eliminate all the Nodes which are a parent --> we only get the FinalLeaves
-      select NEWID() as ID,* into #FinalLeaves0 from
-      	     (select * from #ListNodesDataItemNames where STGID not in (select ParentNodeDefID from Hierarchies)) tmp
+      -- Select the only Nodes which will be DataItem at the Industry Level 
+      select NEWID() as ID,ID as STGID,Name,RM_DataItemID,SortOrder as Sequence
+      	     into #FinalLeaves0 from NodeDefIndustry
+	     where HierarchyID = @HierarchyID and IndustryID = @IndustryID and Port = 'D'
 
 	-- We add the link with the Parent Node using Hierarchies 
 	-- add the full path of the parent in order to identify the data
@@ -38,10 +36,10 @@ BEGIN
       if EXISTS(select * from #FinalLeaves) begin
 
       	 -- Mark all existing information as UnChecked
-	 update RainmakerLDCJP_OAT.dbo.RM_KPI_IND_NodeDataItemAssociation
+	 update DIARM_KPI_IND_NodeDataItemAssociation
 	 set IsChecked = 0
 	 where NodeAssociationID in (
-	       select ID from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_NodeAssociation
+	       select ID from DIARM_KPI_IND_NodeAssociation
 	       	      where KPITypeID = @HierarchyID and KPIIndustryTemplateID = @KPIIndustryTemplateID
 	       union
 	        -- Do NOT delete. It guarantees that if there is no data in KINA, nothing is updated 
@@ -51,11 +49,11 @@ BEGIN
 	 -- Process to extract only the UniqueParent
 	 select *,NEWID() as NodeAssociationID into #FinalLeavesUParent from (select distinct ParentPath from #FinalLeaves) tmp      	 -- Set the link with the RM_KPI_IND_NodeAssociation... The link with RM_DataItemID already exists
 
-      -- Set the link with the RM_KPI_IND_NodeAssociation... The link with RM_DataItemID already exists
+         -- Set the link with the RM_KPI_IND_NodeAssociation... The link with RM_DataItemID already exists
 	 merge into #FinalLeavesUParent fl
 	 using (
 	       select KINA.ID,fl.ParentPath
-	       	      from RainmakerLDCJP_OAT.dbo.RM_KPI_IND_NodeAssociation KINA,#FinalLeavesUParent fl
+	       	      from DIARM_KPI_IND_NodeAssociation KINA,#FinalLeavesUParent fl
 	       	      where KINA.KPITypeID = @HierarchyID and KPIIndustryTemplateID = @KPIIndustryTemplateID
 		      	    and KINA.Description = fl.ParentPath
 	 ) x
@@ -66,8 +64,11 @@ BEGIN
 	-- Associate the NodeAssociationID to all the FinalLeaves
 	select * into #FinalLeaves2 from (select fl.*,flu.NodeAssociationID from #FinalLeaves fl, #FinalLeavesUParent flu where fl.ParentPath = flu.ParentPath) tmp
 
+	-- Debug
+	select * from #FinalLeaves2 
+
          -- We reset to Ischecked all existing Records
-	 merge into RainmakerLDCJP_OAT.dbo.RM_KPI_IND_NodeDataItemAssociation KINDA
+	 merge into DIARM_KPI_IND_NodeDataItemAssociation KINDA
 	 using (
 		select ID,RM_DataItemID as DataItemID,NodeAssociationID,Sequence from #FinalLeaves2
 	 ) x

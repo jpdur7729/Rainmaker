@@ -1,6 +1,6 @@
 -- -------------------------------------------------------------------------
 --                  Author    : FIS - JPD
---                  Time-stamp: "2021-04-20 06:43:43 jpdur"
+--                  Time-stamp: "2021-06-16 10:52:59 jpdur"
 -- -------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------
@@ -13,6 +13,9 @@
 CREATE or ALTER PROCEDURE [dbo].[PS_Populate_CompanyStructure] (@HierarchyName as varchar(100), @IndustryName as varchar(255), @CompanyName as varchar(255))
 as
 BEGIN
+
+-- Flag at the NodeDefIndustry levels what needs to be a DataPoint
+EXEC STG_DIA_Adjust_2layers @HierarchyName,@IndustryName,@CompanyName
 
 -- Deploy the data for that New Company in RM_KPI_Node and RM_DataItem
 EXEC STG_DIA_Populate_RM_KPI_NODE @HierarchyName,@IndustryName,@CompanyName
@@ -35,7 +38,7 @@ EXEC PS_Clear_CompanyStructure @HierarchyName,@IndustryName,@CompanyName
 -- Create the Node Industry Association 
 EXEC STG_DIA_RM_KPI_IND_NodeAssociation @HierarchyName,@IndustryName
 
--- IND NodeDataItemAssociation -- Should be Empty Except for Cash 
+-- IND NodeDataItemAssociation -- Should be Empty Except for Cash and LDC/NAV legacy Structures
 EXEC STG_DIA_Populate_RM_KPI_IND_NodeDataItemAssociation @HierarchyName,@IndustryName
 
 -- CMP_NodeAssociation
