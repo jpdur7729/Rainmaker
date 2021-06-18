@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-06-15 12:47:27 jpdur"
+#                     Time-stamp: "2021-06-17 06:55:40 jpdur"
 # ------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------
@@ -102,9 +102,15 @@ if ($result -ne 1) {
 # ---------------------------------------------------------------------
 $Script       = "Struct_"+$Company+"_"+$Hierarchy+".sql"
 $UploadScript = "Upload_"+$Script
-$LogFile      = "SQLStructure.log"
 
-DetermineStructure -Hierarchy $Hierarchy -Scenario $Scenario -Prefix $Prefix -Action "runSQL" -Script $Script -UploadScript $UploadScript -DatabaseInstance $DatabaseInstance -Database $Database -LogFile $LogFile
+$LogFile      = "SQLStructure.log"
+rm -Force $LogFile -ErrorAction SilentlyContinue > $null
+
+# -KeepResult "Yes" to keep the intermediate xlsx file // -KeepResult "No" or nothing to delete it
+
+DetermineStructure -Hierarchy $Hierarchy -Scenario $Scenario -Prefix $Prefix -Action "runSQL" -Script $Script -UploadScript $UploadScript -DatabaseInstance $DatabaseInstance -Database $Database -LogFile $LogFile -KeepResult "Yes"
+
+exit
 
 # If the logFile has been created - the review it
 if ( ($LogFile -ne "") -and (Test-Path $LogFile) ) {
@@ -120,6 +126,7 @@ sqlcmd -S ($DatabaseInstance) -d ($Database) -i ($Script)
 # Part 2 - Extract the data and create/Execute the scripts to store all the DataPoints
 # --------------------------------------------------------------------------------------
 $LogFile      = "SQLDataPoints.log"
+rm -Force $LogFile -ErrorAction SilentlyContinue > $null
 
 # ExtractData.ps1 -Company $Company -Hierarchy $Hierarchy -Scenario $Scenario -From 2018-05-01 -To 2018-12-01 -Prefix $Prefix -LogFile $LogFile
 ExtractData.ps1 -Company $Company -Hierarchy $Hierarchy -Scenario $Scenario -From $From -To $To -Prefix $Prefix -LogFile $LogFile

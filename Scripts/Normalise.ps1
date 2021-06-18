@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-06-15 11:29:29 jpdur"
+#                     Time-stamp: "2021-06-17 07:06:34 jpdur"
 # ------------------------------------------------------------------------------
 
 # Modified Monday, 26. April 2021 - 011 - structure - Income Statement/Direct/A/B and Statement/Indirect/A/B
