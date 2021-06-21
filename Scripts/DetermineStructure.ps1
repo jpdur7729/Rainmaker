@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-06-15 12:48:54 jpdur"
+#                     Time-stamp: "2021-06-20 11:50:07 jpdur"
 # ------------------------------------------------------------------------------
 
 
@@ -41,6 +41,7 @@ $ListFiles = Get-ChildItem -Filter $Pattern | Where-Object {$_.name -NotLike "DI
 
 # File to be processed 
 "Structure extracted from :" + $ListFiles[0].Name
+"Company                  :" + $Company
 
 # We call Normalise in order to execute the structure accordingl 
 Normalise -Database $Database -Source ($ListFiles[0].Name) -Scope "StructureOnly" -HierarchyLevel "Company" -Action GenerateSQLScript -Prefix $Prefix -Script $Script -UploadScript $UploadScript -LogFile $LogFile > $null

@@ -1,6 +1,6 @@
 -- -------------------------------------------------------------------------
 --                  Author    : FIS - JPD
---                  Time-stamp: "2021-06-16 10:52:59 jpdur"
+--                  Time-stamp: "2021-06-21 08:43:27 jpdur"
 -- -------------------------------------------------------------------------
 
 -- ----------------------------------------------------------------------------------------
@@ -36,13 +36,13 @@ EXEC STG_DIA_Populate_RM_KPI_CMP_RecurrenceScenarioAssociation @IndustryName, @C
 EXEC PS_Clear_CompanyStructure @HierarchyName,@IndustryName,@CompanyName
 
 -- Create the Node Industry Association 
-EXEC STG_DIA_RM_KPI_IND_NodeAssociation @HierarchyName,@IndustryName
+EXEC STG_DIA_Populate_RM_KPI_IND_NodeAssociation @HierarchyName,@IndustryName
 
 -- IND NodeDataItemAssociation -- Should be Empty Except for Cash and LDC/NAV legacy Structures
 EXEC STG_DIA_Populate_RM_KPI_IND_NodeDataItemAssociation @HierarchyName,@IndustryName
 
 -- CMP_NodeAssociation
-EXEC STG_DIA_RM_KPI_CMP_NodeAssociation @HierarchyName,@IndustryName,@CompanyName
+EXEC STG_DIA_Populate_RM_KPI_CMP_NodeAssociation @HierarchyName,@IndustryName,@CompanyName
 
 -- CMP NodeDataItemAssociation
 EXEC STG_DIA_Populate_RM_KPI_CMP_NodeDataItemAssociation @HierarchyName,@IndustryName,@CompanyName

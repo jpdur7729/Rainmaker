@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------------
                        Author    : FIS - JPD
-                       Time-stamp: "2021-06-16 16:07:52 jpdur"
+                       Time-stamp: "2021-06-20 14:43:59 jpdur"
    ------------------------------------------------------------------------------ */
 
 -- 2021-06-16 // Synonym + eliminate from CompanyLevel the nodes flagged as P 
@@ -29,8 +29,10 @@ BEGIN
       	     -- select ID as STGID,Name,NEWID() as RM_DataItemID,SortOrder as Sequence from NodeDef         where HierarchyID = @HierarchyID
 	     -- union 
       	     select ID as STGID,Name,              RM_DataItemID,SortOrder as Sequence from NodeDefIndustry where HierarchyID = @HierarchyID and IndustryID = @IndustryID and Port = 'D'
-	     union 
+	     union
+	     -- Modif 2021-06-20 To identify all the final Leaves correctly
       	     select ID as STGID,Name,              RM_DataItemID,SortOrder as Sequence from NodeDefCompany  where HierarchyID = @HierarchyID and IndustryID = @IndustryID and CompanyID = @CompanyID and Port <> 'P'
+	     	       	  			   and ( Level = 2 or ( level = 1 and ID not in (select ParentNodeDefID from Hierarchies)))
       ) tmp
 
       -- Eliminate all the Nodes which are a parent --> we only get the FinalLeaves

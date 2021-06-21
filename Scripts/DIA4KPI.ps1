@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-06-17 06:55:40 jpdur"
+#                     Time-stamp: "2021-06-20 16:01:35 jpdur"
 # ------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------
@@ -65,10 +65,11 @@ $From = $Data.Year+"-"+$Data.Month+"-01"
 
 "Key parameters about to be used "
 "--------------------------------"
-"KPI     : " + $HierarchyName + " i.e. " + $Hierarchy
-"Company : " + $Company + " with Prefix " + $Prefix+$Company
-"Scenario: " + $Scenario
-"From    : " + $From
+"KPI      : " + $HierarchyName + " i.e. " + $Hierarchy
+"Company  : " + $Company + " with Prefix " + $Prefix+$Company
+"Scenario : " + $Scenario
+"Hierarchy: " + $Hierarchy
+"From     : " + $From
 
 # ----------------------------------------------------------------
 # In order to check if the nb of lines is changing through time
@@ -107,10 +108,7 @@ $LogFile      = "SQLStructure.log"
 rm -Force $LogFile -ErrorAction SilentlyContinue > $null
 
 # -KeepResult "Yes" to keep the intermediate xlsx file // -KeepResult "No" or nothing to delete it
-
 DetermineStructure -Hierarchy $Hierarchy -Scenario $Scenario -Prefix $Prefix -Action "runSQL" -Script $Script -UploadScript $UploadScript -DatabaseInstance $DatabaseInstance -Database $Database -LogFile $LogFile -KeepResult "Yes"
-
-exit
 
 # If the logFile has been created - the review it
 if ( ($LogFile -ne "") -and (Test-Path $LogFile) ) {
@@ -120,7 +118,11 @@ if ( ($LogFile -ne "") -and (Test-Path $LogFile) ) {
 }
 
 # Execute the script which has been generated
-sqlcmd -S ($DatabaseInstance) -d ($Database) -i ($Script)
+sqlcmd -S ($DatabaseInstance) -d ($Database) -i ($Script) > $null
+
+" -----------------------------------------------------"
+"  Structure has been uploaded into local SQL database "
+" -----------------------------------------------------"
 
 # --------------------------------------------------------------------------------------
 # Part 2 - Extract the data and create/Execute the scripts to store all the DataPoints
@@ -143,7 +145,7 @@ if ( ($LogFile -ne "") -and (Test-Path $LogFile) ) {
 "Results DIA spreadsheets are about to be generated"
 
 # Execute the script which has been generated
-sqlcmd -S ($DatabaseInstance) -d ($Database) -i "DataResults.sql"
+sqlcmd -S ($DatabaseInstance) -d ($Database) -i "DataResults.sql" > $null
 
 # --------------------------------------------------------------------------------------
 # Part 3 - Extract the data and create/Execute the scripts to store all the DataPoints

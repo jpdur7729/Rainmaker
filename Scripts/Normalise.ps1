@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-06-17 07:06:34 jpdur"
+#                     Time-stamp: "2021-06-20 11:47:40 jpdur"
 # ------------------------------------------------------------------------------
 
 # Modified Monday, 26. April 2021 - 011 - structure - Income Statement/Direct/A/B and Statement/Indirect/A/B
@@ -99,6 +99,9 @@ $Year = $Data.Year
 $Month = $Data.Month
 $Hierarchy = $Data.Hierarchy
 $Scenario = $Data.Scenario
+
+"Source File             :" + $Source
+"Extracted Data - Company:" + $Company
 
 # Access the module to extract the Corresponding Industry 
 $Industry = GetIndustry -Company $Company -DatabaseInstance $DatabaseInstance -Database $Database

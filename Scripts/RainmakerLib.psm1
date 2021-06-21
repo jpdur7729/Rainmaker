@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #                     Author    : FIS - JPD
-#                     Time-stamp: "2021-06-14 17:32:46 jpdur"
+#                     Time-stamp: "2021-06-20 11:47:12 jpdur"
 # ------------------------------------------------------------------------------
 
 
@@ -160,7 +160,8 @@ function ExtractCharacteristicsNAV($FileName) {
 function ExtractCharacteristics($FileName) {
 
     # Use only # as separators
-    $str = $FileName.replace('_','#').replace(' ','XYZ')
+    # Caution with ' ', '-' and equivalent which are separators
+    $str = $FileName.replace('_','#').replace(' ','ZzZ').replace('-','AaA')
     
     $firstLastPattern = "^(?<BatchNumber>\w+)#(?<Company>\w+)#(?<Hierarchy>\w+)#(?<Scenario>\w+)#(?<Year>\w+)#(?<Month>\w+)#(?<FIS>\w+)#(?<DataStr>\w+)#(?<Encoded>\w+)#(?<CreationDate>\w+)#(?<UnknownNumber>\w+).(?<extension>\w+)"
     $str |
@@ -172,7 +173,7 @@ function ExtractCharacteristics($FileName) {
 	  $BatchNumber, $Company, $Hierarchy, $Scenario, $Year, $Month, $FIS, $DataStr, $Encoded, $CreationDate, $UnknownNumber, $extension = $_.Matches[0].Groups['BatchNumber', 'Company', 'Hierarchy', 'Scenario', 'Year', 'Month', 'FIS', 'DataStr', 'Encoded', 'CreationDate', 'UnknownNumber', 'extension'].Value
 	  [PSCustomObject] @{
               Hierarchy = $Hierarchy
-              Company  = $Company.replace('XYZ',' ')
+              Company  = $Company.replace('ZzZ',' ').replace('AaA','-')
 	      # Number1 = $Number1
 	      # FIS = $FIS
               Scenario = $Scenario
@@ -181,6 +182,7 @@ function ExtractCharacteristics($FileName) {
               Extension = $extension
 	  }
       }
+
 }
 
 # Return a Date which is the last day of the month received
